@@ -3,6 +3,7 @@
   "include": ["env.d.ts", "src/**/*", "src/**/*.ts", "src/types/index.ts", "src/**/*.vue"],
   "exclude": ["src/**/__tests__/*"],
   "compilerOptions": {
+    "types": ["node"],
     "noEmit": true,
     "allowImportingTsExtensions": true,
     "composite": true,

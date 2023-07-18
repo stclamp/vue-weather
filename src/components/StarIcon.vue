@@ -1,13 +1,21 @@
 <script setup lang="ts">
 interface Props {
   fill: string
+  width: number
+  height: number
 }
 
 defineProps<Props>()
 </script>
 
 <template>
-  <svg width="84" height="80" viewBox="0 0 84 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg
+    :width="width"
+    :height="height"
+    viewBox="0 0 84 80"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
     <path
       d="M42.2 2L54.6218 27.1652L82.4 31.2254L62.3 50.8028L67.0436 78.4604L42.2 65.3954L17.3564 78.4604L22.1 50.8028L2 31.2254L29.7782 27.1652L42.2 2Z"
       :fill="fill"
@@ -20,6 +28,8 @@ defineProps<Props>()
 </template>
 
 <style lang="scss">
-// width: width;
-// height: height;
+svg {
+  width: width;
+  height: height;
+}
 </style>

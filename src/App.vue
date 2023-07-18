@@ -1,13 +1,14 @@
-<script setup>
-import { ref, reactive, watch } from 'vue'
-import axios from 'axios'
-import WeatherCard from './components/WeatherCard.vue'
+<script setup lang="ts">
 // import Chart from 'chart.js'
 </script>
 
 <template>
-  <h1>Приложение Погоды на Vue.js</h1>
-  <WeatherCard />
+  <div class="container">
+    <h1>Приложение Погоды на Vue.js</h1>
+    <RouterLink to="/">Главная</RouterLink>
+    <RouterLink to="/favorites">Избранное</RouterLink>
+    <RouterView></RouterView>
+  </div>
   <!-- Weather Blocks -->
   <!-- <div v-for="(weatherBlock, index) in weatherBlocks" :key="index" class="weather-block">
     <h2>{{ weatherBlock.city }}</h2>
@@ -60,12 +61,6 @@ body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
 }
 
 /* App Styles */
