@@ -1,13 +1,3 @@
-<script setup lang="ts">
-interface Props {
-  fill: string
-  width: number
-  height: number
-}
-
-defineProps<Props>()
-</script>
-
 <template>
   <svg
     :width="width"
@@ -26,6 +16,16 @@ defineProps<Props>()
     />
   </svg>
 </template>
+
+<script setup lang="ts">
+interface StarIconProps {
+  fill: string
+  width: number
+  height: number
+}
+
+defineProps<StarIconProps>()
+</script>
 
 <style lang="scss">
 svg {

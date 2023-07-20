@@ -1,66 +1,3 @@
-<script setup lang="ts">
-import { ref } from 'vue'
-import axios from 'axios'
-
-import type { CityInfo, CurrentWeather } from '@/types/index.ts'
-
-const cityInput = ref('')
-const apiKey = import.meta.env.VITE_OPEN_WEATHER_API
-const showAutoComplete = ref(false)
-const autoCompleteCities = ref<CityInfo[]>([])
-const emit = defineEmits(['currentWeather'])
-async function fetchAutoCompleteCities(query: string) {
-  try {
-    const response = await axios.get(
-      `https://api.openweathermap.org/geo/1.0/direct?q=${query}&limit=5&appid=${apiKey}`
-    )
-    console.log(response)
-    autoCompleteCities.value = response.data.map((city: CityInfo) => ({
-      name: city.name,
-      country: city.country
-    }))
-    showAutoComplete.value = true
-  } catch (error) {
-    console.error(error)
-  }
-}
-
-function onCityInputChange() {
-  if (cityInput.value.length >= 1) {
-    fetchAutoCompleteCities(cityInput.value)
-  } else {
-    showAutoComplete.value = false
-  }
-}
-
-async function selectCity(city: CityInfo) {
-  cityInput.value = city.name
-  showAutoComplete.value = false
-  const weatherInfo = await getWeatherData(city)
-  emit('currentWeather', weatherInfo)
-}
-
-async function getWeatherData(city: CityInfo) {
-  try {
-    const { data } = await axios.get(
-      `https://api.openweathermap.org/data/2.5/weather?q=${city.name}&appid=${apiKey}&units=metric`
-    )
-    const weatherInfo: CurrentWeather = {
-      temp: data.main.temp.toFixed(0),
-      feelsLike: data.main.feels_like.toFixed(0),
-      humidity: data.main.humidity.toFixed(0),
-      wind: data.wind.speed.toFixed(0),
-      weather: data.weather[0],
-      name: cityInput.value
-    }
-    console.log('🚀 ~ file: WeatherSearch.vue:54 ~ getWeatherData ~ weatherInfo:', weatherInfo)
-    return weatherInfo
-  } catch (error) {
-    console.error(error)
-  }
-}
-</script>
-
 <template>
   <div class="autocomplete-container">
     <input type="text" v-model="cityInput" @input="onCityInputChange" placeholder="Введите город" />
@@ -77,6 +14,88 @@ async function getWeatherData(city: CityInfo) {
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { onMounted, ref } from 'vue'
+import axios from 'axios'
+
+import type { CityInfo, CurrentWeather } from '@/types/index.ts'
+
+interface SearchProps {
+  card: number
+}
+
+const props = defineProps<SearchProps>()
+
+const cityInput = ref<string>('')
+const apiKey = import.meta.env.VITE_OPEN_WEATHER_API
+const showAutoComplete = ref<boolean>(false)
+const autoCompleteCities = ref<CityInfo[]>([])
+const emit = defineEmits(['currentWeather', 'getWeather'])
+
+onMounted(async () => {
+  const localCity = localStorage.getItem(`weather_block_${props.card}`)
+
+  if (localCity) {
+    const weatherInfo = await getWeatherData(localCity)
+    emit('currentWeather', weatherInfo)
+  }
+})
+
+function onCityInputChange() {
+  if (cityInput.value.length >= 1) {
+    fetchAutoCompleteCities(cityInput.value)
+  } else {
+    showAutoComplete.value = false
+  }
+}
+
+async function selectCity(city: CityInfo) {
+  cityInput.value = city.name
+  showAutoComplete.value = false
+  const weatherInfo = await getWeatherData(city.name)
+  emit('currentWeather', weatherInfo)
+  emit('getWeather', getWeatherData)
+  localStorage.setItem(`weather_block_${props.card}`, cityInput.value)
+}
+
+async function fetchAutoCompleteCities(query: string) {
+  try {
+    const response = await axios.get(
+      `https://api.openweathermap.org/geo/1.0/direct?q=${query}&limit=5&appid=${apiKey}`
+    )
+
+    autoCompleteCities.value = response.data.map((city: CityInfo) => ({
+      name: city.name,
+      country: city.country
+    }))
+
+    showAutoComplete.value = true
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+async function getWeatherData(city: string) {
+  try {
+    const { data } = await axios.get(
+      `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`
+    )
+    const weatherInfo: CurrentWeather = {
+      temp: data.main.temp.toFixed(0),
+      feelsLike: data.main.feels_like.toFixed(0),
+      humidity: data.main.humidity.toFixed(0),
+      wind: data.wind.speed.toFixed(0),
+      weather: data.weather[0],
+      name: data.name
+    }
+
+    return weatherInfo
+  } catch (error) {
+    console.error(error)
+  }
+}
+</script>
 
 <style lang="scss">
 .autocomplete-container {

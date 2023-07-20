@@ -1,42 +1,70 @@
+<template>
+  <div class="weather-card">
+    <div class="weather-search-wrapper">
+      <WeatherSearch @currentWeather="handleValueChange" :card="card" />
+      <button class="add-to-favorite" @click="addToFavorite">
+        <span class="button-text">{{ buttonText }}</span>
+        <StarIcon :fill="starColor" :width="20" :height="20" />
+      </button>
+    </div>
+    <WeatherInfo
+      :currentWeather="currentWeather"
+      :card="props.card"
+      :deleteWeatherCard="deleteWeatherCard"
+    />
+  </div>
+</template>
+
 <script setup lang="ts">
-import { ref } from 'vue'
-import WeatherSearch from './WeatherSearch.vue'
-import WeatherInfo from './WeatherInfo.vue'
-import StarIcon from './StarIcon.vue'
+import { ref, onMounted } from 'vue'
+import WeatherSearch from '@/components/WeatherSearch.vue'
+import WeatherInfo from '@/components/WeatherInfo.vue'
+import StarIcon from '@/components/StarIcon.vue'
 import { EButton, type CurrentWeather } from '@/types/index'
 
+interface WeatherCardProps {
+  card: number
+  deleteWeatherCard: (index: number) => void
+}
+
+const props = defineProps<WeatherCardProps>()
+
 const buttonText = ref<string>(EButton.ADD)
+
 let starColor = EButton.TRANSPARENT
 
 const currentWeather = ref<CurrentWeather | null>(null)
 
-function handleValueChange(value: any) {
-  currentWeather.value = value
-}
+onMounted(() => {
+  const localCityExist = localStorage.getItem(`weather_block_${props.card}`)
 
-function addToFavorite() {
-  if (buttonText.value === EButton.ADD) {
+  if (localCityExist) {
     buttonText.value = EButton.REMOVE
     starColor = EButton.ORANGE
   } else {
     buttonText.value = EButton.ADD
     starColor = EButton.TRANSPARENT
   }
+})
+
+function handleValueChange(value: CurrentWeather) {
+  currentWeather.value = value
+}
+
+function addToFavorite() {
+  if (buttonText.value === EButton.ADD) {
+    const currentCity =
+      typeof currentWeather?.value?.name === 'string' ? currentWeather?.value?.name : ''
+    localStorage.setItem(`weather_block_${props.card}`, currentCity)
+    buttonText.value = EButton.REMOVE
+    starColor = EButton.ORANGE
+  } else {
+    localStorage.removeItem(`weather_block_${props.card}`)
+    buttonText.value = EButton.ADD
+    starColor = EButton.TRANSPARENT
+  }
 }
 </script>
-
-<template>
-  <div class="weather-card">
-    <div class="weather-search-wrapper">
-      <WeatherSearch @currentWeather="handleValueChange" />
-      <button class="add-to-favorite" @click="addToFavorite">
-        <span class="button-text">{{ buttonText }}</span>
-        <StarIcon :fill="starColor" :width="20" :height="20" />
-      </button>
-    </div>
-    <WeatherInfo :currentWeather="currentWeather" />
-  </div>
-</template>
 
 <style lang="scss">
 .weather-card {
@@ -45,6 +73,7 @@ function addToFavorite() {
   box-shadow: 2px 2px 24px -1px rgba(0, 0, 0, 0.27);
   border-radius: 9px;
   padding: 25px;
+  margin-top: 30px;
 }
 
 .weather-search-wrapper {

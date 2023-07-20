@@ -1,6 +1,13 @@
 {
   "extends": "@vue/tsconfig/tsconfig.dom.json",
-  "include": ["env.d.ts", "src/**/*", "src/**/*.ts", "src/types/index.ts", "src/**/*.vue"],
+  "include": [
+    "env.d.ts",
+    "src/**/*",
+    "src/**/*.ts",
+    "src/types/index.ts",
+    "src/helpers/convertUnixToTime.ts",
+    "src/**/*.vue"
+  ],
   "exclude": ["src/**/__tests__/*"],
   "compilerOptions": {
     "types": ["node"],
@@ -10,7 +17,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@/types": ["./src/types/"]
+      "@/types": ["./src/types/"],
+      "@/helpers": ["./src/helpers/"]
     }
   }
 }
