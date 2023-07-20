@@ -1,6 +1,12 @@
 <template>
   <div class="autocomplete-container">
-    <input type="text" v-model="cityInput" @input="onCityInputChange" placeholder="Введите город" />
+    <input
+      type="text"
+      v-model="cityInput"
+      @input="onCityInputChange"
+      placeholder="Введите город"
+      :disabled="favorites"
+    />
     <div v-if="showAutoComplete" class="autocomplete">
       <div
         v-for="(city, index) in autoCompleteCities"
@@ -16,13 +22,16 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import axios from 'axios'
 
 import type { CityInfo, CurrentWeather } from '@/types/index.ts'
 
 interface SearchProps {
-  card: number
+  card?: number
+  currentUserCity: string
+  favorites?: boolean
+  localCityName?: string
 }
 
 const props = defineProps<SearchProps>()
@@ -31,20 +40,28 @@ const cityInput = ref<string>('')
 const apiKey = import.meta.env.VITE_OPEN_WEATHER_API
 const showAutoComplete = ref<boolean>(false)
 const autoCompleteCities = ref<CityInfo[]>([])
-const emit = defineEmits(['currentWeather', 'getWeather'])
+const emit = defineEmits(['currentWeather', 'favoritesWeather'])
 
 onMounted(async () => {
-  const localCity = localStorage.getItem(`weather_block_${props.card}`)
+  watch(
+    () => props.currentUserCity,
+    async () => {
+      if (props.currentUserCity) {
+        const weatherInfo = await getWeatherData(props.currentUserCity)
+        emit('currentWeather', weatherInfo)
+      }
+    }
+  )
 
-  if (localCity) {
-    const weatherInfo = await getWeatherData(localCity)
-    emit('currentWeather', weatherInfo)
+  if (props.favorites) {
+    const weatherInfo = await getWeatherData(props.localCityName as string)
+    emit('favoritesWeather', weatherInfo)
   }
 })
 
-function onCityInputChange() {
+async function onCityInputChange() {
   if (cityInput.value.length >= 1) {
-    fetchAutoCompleteCities(cityInput.value)
+    await fetchAutoCompleteCities(cityInput.value)
   } else {
     showAutoComplete.value = false
   }
@@ -55,8 +72,6 @@ async function selectCity(city: CityInfo) {
   showAutoComplete.value = false
   const weatherInfo = await getWeatherData(city.name)
   emit('currentWeather', weatherInfo)
-  emit('getWeather', getWeatherData)
-  localStorage.setItem(`weather_block_${props.card}`, cityInput.value)
 }
 
 async function fetchAutoCompleteCities(query: string) {
@@ -67,7 +82,9 @@ async function fetchAutoCompleteCities(query: string) {
 
     autoCompleteCities.value = response.data.map((city: CityInfo) => ({
       name: city.name,
-      country: city.country
+      country: city.country,
+      lon: city.lon,
+      lat: city.lat
     }))
 
     showAutoComplete.value = true
@@ -81,6 +98,7 @@ async function getWeatherData(city: string) {
     const { data } = await axios.get(
       `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`
     )
+
     const weatherInfo: CurrentWeather = {
       temp: data.main.temp.toFixed(0),
       feelsLike: data.main.feels_like.toFixed(0),
@@ -132,5 +150,11 @@ input {
   &:hover {
     background-color: #979595;
   }
+}
+
+input[disabled] {
+  background-color: #c9c9c9;
+  color: #999;
+  cursor: not-allowed;
 }
 </style>
