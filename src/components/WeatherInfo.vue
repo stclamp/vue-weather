@@ -13,41 +13,66 @@
         </button>
       </div>
       <div class="buttons-delete">
-        <button class="weather-button button-delete" @click="handleOpenModal">Удалить</button>
+        <button
+          class="weather-button button-delete"
+          @click="handleOpenModal"
+          v-if="!props.favorites"
+        >
+          Удалить
+        </button>
       </div>
     </div>
-    <p class="weather-name">{{ props.currentWeather?.name }}</p>
-    <WeatherInfoDay v-if="props.currentWeather && day" :currentWeather="props.currentWeather" />
+    <p class="weather-name">
+      {{ favorites ? props.favoritesWeather?.name : props.currentWeather?.name }}
+    </p>
+    <WeatherInfoDay
+      v-if="props.currentWeather && day"
+      :favoritesWeather="props.favoritesWeather"
+      :currentWeather="props.currentWeather"
+      :favorites="props.favorites"
+      :cardIndex="cardIndex"
+    />
     <WeatherInfoWeek
       v-if="props.currentWeather && week"
       :currentWeather="props.currentWeather"
+      :favorites="props.favorites"
       :weekWeather="weekWeather"
+      :favoritesWeather="props.favoritesWeather"
+      :cardIndex="cardIndex"
     />
-    <WeatherChart :city="props.currentWeather?.name" :card="card" :day="day" />
+    <WeatherChart
+      :city="props.currentWeather?.name"
+      :cardIndex="cardIndex"
+      :day="day"
+      :favorites="favorites"
+      :favoritesWeather="favoritesWeather"
+    />
   </div>
   <AcceptModal
     v-if="showModal"
     :isShowModal="showModal"
-    @deleteConfirmed="deleteWeatherCard(card)"
+    @deleteConfirmed="deleteWeatherCard && deleteWeatherCard(cardIndex)"
     @closeModal="handleCloseModal"
   />
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
-import type { CurrentWeather, WeekWeather } from '@/types/index.ts'
-import WeatherChart from './WeatherChart.vue'
-import WeatherInfoDay from './WeatherInfoDay.vue'
-import WeatherInfoWeek from './WeatherInfoWeek.vue'
-import AcceptModal from '@/components/AcceptModal.vue'
 import axios from 'axios'
+import WeatherChart from '@/components/WeatherChart.vue'
+import WeatherInfoDay from '@/components/WeatherInfoDay.vue'
+import WeatherInfoWeek from '@/components/WeatherInfoWeek.vue'
+import AcceptModal from '@/components/AcceptModal.vue'
 import { groupForecastsByDate } from '@/helpers/groupForecasts'
 import { getDailyFortecasts } from '@/helpers/getDailyForecasts'
+import type { CurrentWeather, WeekWeather } from '@/types/index.ts'
 
 interface InfoProps {
   currentWeather: CurrentWeather | null
-  card: number
-  deleteWeatherCard: (index: number) => void
+  cardIndex: number
+  deleteWeatherCard?: (index: number) => void
+  favorites?: boolean
+  favoritesWeather?: CurrentWeather
 }
 
 const props = defineProps<InfoProps>()
@@ -70,7 +95,17 @@ onMounted(() => {
 
 watch(
   () => props.currentWeather,
-  () => (activeButton.value === 'day' ? showDayWeather() : showWeekWeather())
+  () => {
+    if (activeButton.value === 'day') {
+      showDayWeather()
+    } else {
+      if (props.favorites) {
+        showWeekWeather(props.favoritesWeather?.name as string)
+      } else {
+        showWeekWeather(props.currentWeather?.name as string)
+      }
+    }
+  }
 )
 
 function toggleActiveButton(buttonType: string) {
@@ -78,7 +113,11 @@ function toggleActiveButton(buttonType: string) {
   if (buttonType === 'day') {
     showDayWeather()
   } else {
-    showWeekWeather()
+    if (props.favorites) {
+      showWeekWeather(props.favoritesWeather?.name as string)
+    } else {
+      showWeekWeather(props.currentWeather?.name as string)
+    }
   }
 }
 
@@ -95,12 +134,12 @@ function showDayWeather() {
   day.value = true
 }
 
-async function showWeekWeather() {
+async function showWeekWeather(city: string) {
   week.value = true
   day.value = false
   try {
     const { data } = await axios.get(
-      `https://api.openweathermap.org/data/2.5/forecast?q=${props.currentWeather?.name}&appid=${apiKey}&units=metric`
+      `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`
     )
 
     const groupedForecasts = groupForecastsByDate(data.list)
@@ -108,7 +147,6 @@ async function showWeekWeather() {
     const dailyForecasts = getDailyFortecasts(groupedForecasts)
 
     weekWeather.value = dailyForecasts
-    console.log('🚀 ~ file: WeatherInfo.vue:111 ~ showWeekWeather ~ weekWeather:', weekWeather)
   } catch (error) {
     console.error(error)
   }

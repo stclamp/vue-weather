@@ -9,71 +9,33 @@
     <RouterLink to="/favorites">Избранное</RouterLink>
     <RouterView></RouterView>
   </div>
-  <!-- Weather Blocks -->
-  <!-- <div v-for="(weatherBlock, index) in weatherBlocks" :key="index" class="weather-block">
-    <h2>{{ weatherBlock.city }}</h2>
-    <button @click="deleteWeatherBlock(index)">Удалить</button> -->
-  <!-- Weather Card -->
-  <!-- <div v-if="weatherBlock.weatherInfo" class="weather-card">
-      <h3>Погода на текущий день</h3>
-      <p>Температура: {{ weatherBlock.weatherInfo.temp }} °C</p>
-      <p>Описание: {{ weatherBlock.weatherInfo.description }}</p>
-      <p>Влажность: {{ weatherBlock.weatherInfo.humidity }}%</p>
-      <p>Ветер: {{ weatherBlock.weatherInfo.wind }} м/с</p>
-    </div> -->
-  <!-- Weather Chart -->
-  <!-- <div v-if="weatherBlock.weatherData" class="weather-chart">
-      <h3>График температуры на текущий день</h3>
-      <canvas :id="'chart-' + index"></canvas>
-    </div>
-  </div>
-  <button @click="addWeatherBlock">+</button> -->
-  <!-- Favorite Cities -->
-  <!-- <div id="favoriteCities">
-    <h2>Избранное</h2>
-    <div id="favoriteWeatherBlocks">
-      <div
-        v-for="(favoriteBlock, index) in favoriteWeatherBlocks"
-        :key="index"
-        class="weather-block favorite"
-      >
-        <h2>{{ favoriteBlock.city }}</h2>
-        <button @click="deleteFavoriteBlock(index)">Удалить</button>
-        <div class="weather-card">
-          <h3>Погода на текущий день</h3>
-          <p>Температура: {{ favoriteBlock.weatherInfo.temp }} °C</p>
-          <p>Описание: {{ favoriteBlock.weatherInfo.description }}</p>
-          <p>Влажность: {{ favoriteBlock.weatherInfo.humidity }}%</p>
-          <p>Ветер: {{ favoriteBlock.weatherInfo.wind }} м/с</p>
-        </div>
-        <div class="weather-chart">
-          <h3>График температуры на текущий день</h3>
-          <canvas :id="'chart-favorite-' + index"></canvas>
-        </div>
-      </div>
-    </div>
-  </div> -->
 </template>
 
 <style>
-/* Global Styles */
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-}
-
-/* App Styles */
-#app {
-  background-color: #f5f5f5;
-  padding: 20px;
-}
-
 h1 {
   text-align: center;
 }
 
-/* Responsive Styles */
+a {
+  color: #42849e;
+  text-decoration: none;
+  margin-right: 10px;
+  transition: 0.3s ease-in-out;
+
+  &:hover {
+    color: #114458;
+  }
+}
+
+.router-link-active {
+  color: #42849e;
+  border-bottom: 1px solid #42849e;
+
+  &:hover {
+    border-bottom: 1px solid #114458;
+  }
+}
+
 @media (max-width: 1200px) {
   .container {
     max-width: 100%;

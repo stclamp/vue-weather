@@ -1,11 +1,11 @@
 <template>
   <div class="weather-chart" v-if="localCity">
-    <canvas :id="`weatherChart-${props.card}`" style="width: 100%; height: 400px"></canvas>
+    <canvas :id="`weatherChart-${props.cardIndex}`" style="width: 100%; height: 400px"></canvas>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import moment from 'moment'
 import axios from 'axios'
 import Chart, { type TooltipItem, type TooltipModel } from 'chart.js/auto'
@@ -13,53 +13,55 @@ import 'chartjs-adapter-moment'
 import { convertUnixToDateTime } from '@/helpers/convertUnixToTime.ts'
 import { groupForecastsByDate } from '@/helpers/groupForecasts'
 import { getDailyFortecasts } from '@/helpers/getDailyForecasts'
-import type { ForecastData, WeekWeather } from '@/types'
+import type { CurrentWeather, ForecastData, WeekWeather } from '@/types'
 
 interface WeatherChartProps {
   city: string | undefined
-  card: number
+  cardIndex: number
   day: boolean
+  favorites?: boolean
+  favoritesWeather?: CurrentWeather
 }
 
 const props = defineProps<WeatherChartProps>()
 const apiKey = import.meta.env.VITE_OPEN_WEATHER_API
 
 const localCity = ref<string | null | undefined>(props.city || null)
+const weatherData = ref()
 
 let chartInstance: Chart<'line', (string | undefined)[], string> | null = null
 
-onMounted(() => {
-  const cityFromLS = localStorage.getItem(`weather_block_${props.card}`)
+watch(
+  [() => props.day, () => props.city, () => props.favorites, () => props.favoritesWeather],
+  async (newValue) => {
+    localCity.value = newValue[1]
 
-  if (cityFromLS) {
-    localCity.value = cityFromLS
-  }
-})
+    if (props.favorites) {
+      weatherData.value = await getData(props.favoritesWeather?.name as string)
+    } else {
+      weatherData.value = await getData(localCity.value as string)
+    }
 
-watch([() => props.day, () => props.city], async (newValue) => {
-  localCity.value = newValue[1]
+    if (weatherData.value && chartInstance) {
+      chartInstance.destroy()
+    }
 
-  const weatherData = await getData()
+    if (weatherData.value) {
+      const weatherChart = document.getElementById(
+        `weatherChart-${props.cardIndex}`
+      ) as HTMLCanvasElement | null
 
-  if (weatherData && chartInstance) {
-    chartInstance.destroy()
-  }
-
-  if (weatherData) {
-    const weatherChart = document.getElementById(
-      `weatherChart-${props.card}`
-    ) as HTMLCanvasElement | null
-
-    if (weatherChart) {
-      createChart(weatherData, weatherChart)
+      if (weatherChart) {
+        createChart(weatherData.value, weatherChart)
+      }
     }
   }
-})
+)
 
-async function getData() {
+async function getData(city: string) {
   try {
     const { data } = await axios.get(
-      `https://api.openweathermap.org/data/2.5/forecast?q=${localCity.value}&appid=${apiKey}&units=metric`
+      `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`
     )
     const listOfDates = data.list
       .map((item: ForecastData, i: number) => {

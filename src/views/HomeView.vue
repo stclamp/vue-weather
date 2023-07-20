@@ -14,7 +14,7 @@ const cards = ref<number[]>([0])
 function addWeatherCard() {
   const newIndex = cards.value.length
   if (newIndex >= 5) {
-    alert('Максимум 5 блоков. Удалите предыдущий, что бы добавить новый!')
+    alert('Максимум 5 блоков. Удалите предыдущий, что бы добавить новый!') //replace to custom modal
     return
   }
   cards.value.push(newIndex)

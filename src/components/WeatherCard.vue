@@ -1,7 +1,14 @@
 <template>
   <div class="weather-card">
     <div class="weather-search-wrapper">
-      <WeatherSearch @currentWeather="handleValueChange" :card="card" />
+      <WeatherSearch
+        @currentWeather="handleValueChange"
+        @favoritesWeather="handleChangeFavorite"
+        :favorites="favorites"
+        :cardIndex="props.cardIndex"
+        :currentUserCity="currentUserCity"
+        :localCityName="localCityName"
+      />
       <button class="add-to-favorite" @click="addToFavorite">
         <span class="button-text">{{ buttonText }}</span>
         <StarIcon :fill="starColor" :width="20" :height="20" />
@@ -9,59 +16,102 @@
     </div>
     <WeatherInfo
       :currentWeather="currentWeather"
-      :card="props.card"
+      :favorites="favorites"
+      :cardIndex="props.cardIndex"
       :deleteWeatherCard="deleteWeatherCard"
+      :favoritesWeather="favoritesWeather"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch, onBeforeMount } from 'vue'
+import axios from 'axios'
 import WeatherSearch from '@/components/WeatherSearch.vue'
 import WeatherInfo from '@/components/WeatherInfo.vue'
 import StarIcon from '@/components/StarIcon.vue'
 import { EButton, type CurrentWeather } from '@/types/index'
 
 interface WeatherCardProps {
-  card: number
-  deleteWeatherCard: (index: number) => void
+  cardIndex: number
+  deleteWeatherCard?: (index: number) => void
+  favorites?: boolean
+  localCityName?: string
 }
 
 const props = defineProps<WeatherCardProps>()
+
+const emit = defineEmits(['removeFromFavorites', 'favoritesWeather'])
 
 const buttonText = ref<string>(EButton.ADD)
 
 let starColor = EButton.TRANSPARENT
 
 const currentWeather = ref<CurrentWeather | null>(null)
+const currentUserCity = ref<string>('')
+const favoritesWeather = ref<CurrentWeather>()
 
 onMounted(() => {
-  const localCityExist = localStorage.getItem(`weather_block_${props.card}`)
+  watch([() => currentWeather.value?.name, () => favoritesWeather.value?.name], () => {
+    const localCityExist = localStorage.getItem(`weather_block_${currentWeather.value?.name}`)
+    if (localCityExist === currentWeather.value?.name || props.favorites) {
+      buttonText.value = EButton.REMOVE
+      starColor = EButton.ORANGE
+    } else {
+      buttonText.value = EButton.ADD
+      starColor = EButton.TRANSPARENT
+    }
+  })
 
-  if (localCityExist) {
-    buttonText.value = EButton.REMOVE
-    starColor = EButton.ORANGE
-  } else {
-    buttonText.value = EButton.ADD
-    starColor = EButton.TRANSPARENT
-  }
+  emit('favoritesWeather', favoritesWeather.value)
+})
+
+onBeforeMount(() => {
+  getUserLocation()
 })
 
 function handleValueChange(value: CurrentWeather) {
   currentWeather.value = value
 }
 
+function handleChangeFavorite(value: CurrentWeather) {
+  favoritesWeather.value = value
+}
+
 function addToFavorite() {
   if (buttonText.value === EButton.ADD) {
-    const currentCity =
-      typeof currentWeather?.value?.name === 'string' ? currentWeather?.value?.name : ''
-    localStorage.setItem(`weather_block_${props.card}`, currentCity)
+    if (localStorage.length >= 5) {
+      alert('Максимум 5 блоков в избранном!') //replace to custom modal
+      return
+    }
+    localStorage.setItem(
+      `weather_block_${currentWeather.value?.name}`,
+      currentWeather.value?.name as string
+    )
     buttonText.value = EButton.REMOVE
     starColor = EButton.ORANGE
   } else {
-    localStorage.removeItem(`weather_block_${props.card}`)
-    buttonText.value = EButton.ADD
-    starColor = EButton.TRANSPARENT
+    if (props.favorites) {
+      localStorage.removeItem(`weather_block_${favoritesWeather?.value?.name}`)
+      buttonText.value = EButton.ADD
+      starColor = EButton.TRANSPARENT
+
+      emit('removeFromFavorites', props.localCityName)
+    } else {
+      localStorage.removeItem(`weather_block_${currentWeather.value?.name}`)
+      buttonText.value = EButton.ADD
+      starColor = EButton.TRANSPARENT
+    }
+  }
+}
+
+async function getUserLocation() {
+  try {
+    const { data } = await axios.get('http://ip-api.com/json')
+
+    currentUserCity.value = data.city
+  } catch (error) {
+    console.error('Ошибка при получении местоположения:', error)
   }
 }
 </script>
