@@ -4,33 +4,47 @@
       <WeatherSearch
         @currentWeather="handleValueChange"
         @favoritesWeather="handleChangeFavorite"
+        @startLoading="startLoading"
+        @endLoading="endLoading"
         :favorites="favorites"
         :cardIndex="props.cardIndex"
         :currentUserCity="currentUserCity"
         :localCityName="localCityName"
       />
-      <button class="add-to-favorite" @click="addToFavorite">
-        <span class="button-text">{{ buttonText }}</span>
-        <StarIcon :fill="starColor" :width="20" :height="20" />
-      </button>
+      <ButtonPrimary
+        class="add-to-favorite"
+        :text="buttonText"
+        :starColor="starColor"
+        @click="addToFavorite"
+        :hasIcon="true"
+      />
     </div>
-    <WeatherInfo
-      :currentWeather="currentWeather"
-      :favorites="favorites"
-      :cardIndex="props.cardIndex"
-      :deleteWeatherCard="deleteWeatherCard"
-      :favoritesWeather="favoritesWeather"
-    />
+    <div>
+      <WeatherInfo
+        :currentWeather="currentWeather"
+        :favorites="favorites"
+        :cardIndex="cardIndex"
+        :deleteWeatherCard="deleteWeatherCard"
+        :favoritesWeather="favoritesWeather"
+        :loading="loading"
+      />
+    </div>
   </div>
+  <WarningModal
+    v-if="isWarning"
+    :text="'Максимум 5 блоков в избранном!'"
+    @closeWarningModal="closeWarningModal"
+  />
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, onBeforeMount } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
 import WeatherSearch from '@/components/WeatherSearch.vue'
 import WeatherInfo from '@/components/WeatherInfo.vue'
-import StarIcon from '@/components/StarIcon.vue'
 import { EButton, type CurrentWeather } from '@/types/index'
+import WarningModal from './WarningModal.vue'
+import ButtonPrimary from './ButtonPrimary.vue'
 
 interface WeatherCardProps {
   cardIndex: number
@@ -43,30 +57,35 @@ const props = defineProps<WeatherCardProps>()
 
 const emit = defineEmits(['removeFromFavorites', 'favoritesWeather'])
 
-const buttonText = ref<string>(EButton.ADD)
-
 let starColor = EButton.TRANSPARENT
 
+const buttonText = ref<string>(EButton.ADD)
 const currentWeather = ref<CurrentWeather | null>(null)
 const currentUserCity = ref<string>('')
 const favoritesWeather = ref<CurrentWeather>()
+const loading = ref<boolean>(false)
+const isWarning = ref<boolean>(false)
 
 onMounted(() => {
-  watch([() => currentWeather.value?.name, () => favoritesWeather.value?.name], () => {
-    const localCityExist = localStorage.getItem(`weather_block_${currentWeather.value?.name}`)
-    if (localCityExist === currentWeather.value?.name || props.favorites) {
-      buttonText.value = EButton.REMOVE
-      starColor = EButton.ORANGE
-    } else {
-      buttonText.value = EButton.ADD
-      starColor = EButton.TRANSPARENT
+  watch(
+    [
+      () => currentWeather.value?.name,
+      () => favoritesWeather.value?.name,
+      () => props.localCityName
+    ],
+    () => {
+      const localCityExist = localStorage.getItem(`weather_block_${currentWeather.value?.name}`)
+      if (localCityExist === currentWeather.value?.name || props.favorites) {
+        buttonText.value = EButton.REMOVE
+        starColor = EButton.ORANGE
+      } else {
+        buttonText.value = EButton.ADD
+        starColor = EButton.TRANSPARENT
+      }
+      emit('favoritesWeather', favoritesWeather.value)
+      console.log(`${props.cardIndex}: ${favoritesWeather.value?.name}`)
     }
-  })
-
-  emit('favoritesWeather', favoritesWeather.value)
-})
-
-onBeforeMount(() => {
+  )
   getUserLocation()
 })
 
@@ -78,10 +97,22 @@ function handleChangeFavorite(value: CurrentWeather) {
   favoritesWeather.value = value
 }
 
+function startLoading() {
+  loading.value = true
+}
+
+function endLoading() {
+  loading.value = false
+}
+
+function closeWarningModal() {
+  isWarning.value = false
+}
+
 function addToFavorite() {
   if (buttonText.value === EButton.ADD) {
     if (localStorage.length >= 5) {
-      alert('Максимум 5 блоков в избранном!') //replace to custom modal
+      isWarning.value = true
       return
     }
     localStorage.setItem(
@@ -117,11 +148,9 @@ async function getUserLocation() {
 </script>
 
 <style lang="scss">
+@import '@/assets/styles/_mixins.scss';
 .weather-card {
-  -webkit-box-shadow: 2px 2px 24px -1px rgba(0, 0, 0, 0.27);
-  -moz-box-shadow: 2px 2px 24px -1px rgba(0, 0, 0, 0.27);
-  box-shadow: 2px 2px 24px -1px rgba(0, 0, 0, 0.27);
-  border-radius: 9px;
+  @include box-shadow;
   padding: 25px;
   margin-top: 30px;
 }
@@ -133,17 +162,12 @@ async function getUserLocation() {
 }
 
 .add-to-favorite {
-  padding: 10px;
   font-size: 16px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
   display: flex;
   align-items: center;
-  cursor: pointer;
-  transition: 0.3s ease-in-out;
-
-  &:hover {
-    background-color: #ccc;
+  justify-content: space-between;
+  span {
+    margin-left: 10px;
   }
 }
 
@@ -154,5 +178,11 @@ async function getUserLocation() {
 .weather-icon {
   width: 50px;
   height: 50px;
+}
+
+@media (min-width: 360px) and (max-width: 768px) {
+  .weather-search-wrapper {
+    flex-direction: column;
+  }
 }
 </style>

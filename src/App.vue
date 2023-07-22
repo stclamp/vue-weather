@@ -11,28 +11,29 @@
   </div>
 </template>
 
-<style>
+<style lang="scss" scoped>
+@import '@/assets/styles/_variables.scss';
 h1 {
   text-align: center;
 }
 
 a {
-  color: #42849e;
+  color: $color-text;
   text-decoration: none;
   margin-right: 10px;
   transition: 0.3s ease-in-out;
 
   &:hover {
-    color: #114458;
+    color: $color-secondary;
   }
 }
 
 .router-link-active {
-  color: #42849e;
-  border-bottom: 1px solid #42849e;
+  color: $color-text;
+  border-bottom: 1px solid $color-text;
 
   &:hover {
-    border-bottom: 1px solid #114458;
+    border-bottom: 1px solid $color-secondary;
   }
 }
 

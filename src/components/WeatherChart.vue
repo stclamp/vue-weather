@@ -1,6 +1,9 @@
 <template>
   <div class="weather-chart" v-if="localCity">
-    <canvas :id="`weatherChart-${props.cardIndex}`" style="width: 100%; height: 400px"></canvas>
+    <canvas
+      :id="`weatherChart-${props.cardIndex}-${city}`"
+      style="width: 100%; height: 400px"
+    ></canvas>
   </div>
 </template>
 
@@ -48,8 +51,8 @@ watch(
 
     if (weatherData.value) {
       const weatherChart = document.getElementById(
-        `weatherChart-${props.cardIndex}`
-      ) as HTMLCanvasElement | null
+        `weatherChart-${props.cardIndex}-${props.city}`
+      ) as HTMLCanvasElement
 
       if (weatherChart) {
         createChart(weatherData.value, weatherChart)
@@ -88,6 +91,7 @@ function createChart(weatherData: WeekWeather[], weatherChart: HTMLCanvasElement
 
   const ctx = weatherChart.getContext('2d')
 
+  Chart.defaults.color = 'rgba(235, 235, 245, 0.6)'
   if (ctx) {
     chartInstance = new Chart(ctx, {
       type: 'line',
@@ -97,11 +101,28 @@ function createChart(weatherData: WeekWeather[], weatherChart: HTMLCanvasElement
           {
             data: weatherTemps,
             backgroundColor: 'rgb(147, 228, 251)',
+            borderColor: 'rgba(235, 235, 245, 0.6)',
+            pointBackgroundColor: '#DE9426',
             tension: 0.4
           }
         ]
       },
       options: {
+        onResize(chart, size) {
+          if (size.width < 768) {
+            chart.canvas.width = size.width
+            chart.canvas.style.width = `${size.width}px`
+            chart.canvas.height = size.height
+            chart.canvas.style.height = `${size.height}px`
+            if (chart.options.scales && chart.options.scales.x) {
+              chart.options.scales.x.display = false
+            }
+          } else {
+            chart.canvas.style.width = `100%`
+            chart.canvas.style.height = `100%`
+          }
+        },
+        // responsive: true,
         maintainAspectRatio: false,
         scales: {
           x: {
@@ -126,7 +147,7 @@ function createChart(weatherData: WeekWeather[], weatherChart: HTMLCanvasElement
             }
           },
           y: {
-            beginAtZero: true,
+            beginAtZero: false,
             ticks: {
               maxTicksLimit: 5,
               stepSize: 5,
@@ -164,7 +185,7 @@ function createChart(weatherData: WeekWeather[], weatherChart: HTMLCanvasElement
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 .weather-chart {
   width: 100%;
   max-height: 400px;

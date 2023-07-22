@@ -2,50 +2,52 @@
   <div class="weather-info-wrapper">
     <div class="buttons-wrapper">
       <div class="buttons-info">
-        <button
+        <ButtonPrimary
           v-for="button in buttons"
           :key="button.type"
+          :text="button.label"
           class="weather-button"
           :class="{ active: activeButton === button.type }"
           @click="toggleActiveButton(button.type)"
-        >
-          {{ button.label }}
-        </button>
+        />
       </div>
       <div class="buttons-delete">
-        <button
+        <ButtonPrimary
+          :text="'Удалить'"
           class="weather-button button-delete"
           @click="handleOpenModal"
           v-if="!props.favorites"
-        >
-          Удалить
-        </button>
+        />
       </div>
     </div>
-    <p class="weather-name">
-      {{ favorites ? props.favoritesWeather?.name : props.currentWeather?.name }}
+    <SpinnerIcon v-if="props.loading" />
+    <p class="weather-name" v-if="!loading">
+      {{ favorites ? favoritesWeather?.name : currentWeather?.name }}
     </p>
     <WeatherInfoDay
-      v-if="props.currentWeather && day"
-      :favoritesWeather="props.favoritesWeather"
-      :currentWeather="props.currentWeather"
-      :favorites="props.favorites"
-      :cardIndex="cardIndex"
+      v-if="props.currentWeather && day && !props.loading"
+      :favoritesWeather="favoritesWeather"
+      :currentWeather="currentWeather"
+      :favorites="favorites"
+      :loading="loading"
     />
     <WeatherInfoWeek
-      v-if="props.currentWeather && week"
-      :currentWeather="props.currentWeather"
-      :favorites="props.favorites"
+      v-if="currentWeather && week"
+      :currentWeather="currentWeather"
+      :favorites="favorites"
       :weekWeather="weekWeather"
-      :favoritesWeather="props.favoritesWeather"
+      :favoritesWeather="favoritesWeather"
       :cardIndex="cardIndex"
+      :loading="weekLoading"
     />
     <WeatherChart
-      :city="props.currentWeather?.name"
+      v-if="!loading"
+      :city="currentWeather?.name"
       :cardIndex="cardIndex"
       :day="day"
       :favorites="favorites"
       :favoritesWeather="favoritesWeather"
+      :loading="loading"
     />
   </div>
   <AcceptModal
@@ -63,6 +65,8 @@ import WeatherChart from '@/components/WeatherChart.vue'
 import WeatherInfoDay from '@/components/WeatherInfoDay.vue'
 import WeatherInfoWeek from '@/components/WeatherInfoWeek.vue'
 import AcceptModal from '@/components/AcceptModal.vue'
+import SpinnerIcon from '@/components/SpinnerIcon.vue'
+import ButtonPrimary from '@/components/ButtonPrimary.vue'
 import { groupForecastsByDate } from '@/helpers/groupForecasts'
 import { getDailyFortecasts } from '@/helpers/getDailyForecasts'
 import type { CurrentWeather, WeekWeather } from '@/types/index.ts'
@@ -73,16 +77,19 @@ interface InfoProps {
   deleteWeatherCard?: (index: number) => void
   favorites?: boolean
   favoritesWeather?: CurrentWeather
+  loading: boolean
 }
 
 const props = defineProps<InfoProps>()
 
 const apiKey = import.meta.env.VITE_OPEN_WEATHER_API
+
 const activeButton = ref<string>('day')
 const showModal = ref<boolean>(false)
 const day = ref<boolean>(true)
 const week = ref<boolean>(false)
-const weekWeather = ref<WeekWeather[] | null>(null)
+const weekWeather = ref<WeekWeather[] | null | undefined>(null)
+const weekLoading = ref<boolean>(false)
 
 const buttons = [
   { type: 'day', label: 'День' },
@@ -93,20 +100,17 @@ onMounted(() => {
   showDayWeather()
 })
 
-watch(
-  () => props.currentWeather,
-  () => {
-    if (activeButton.value === 'day') {
-      showDayWeather()
+watch([() => props.currentWeather, () => props.favoritesWeather], () => {
+  if (activeButton.value === 'day') {
+    showDayWeather()
+  } else {
+    if (props.favorites) {
+      showWeekWeather(props.favoritesWeather?.name as string)
     } else {
-      if (props.favorites) {
-        showWeekWeather(props.favoritesWeather?.name as string)
-      } else {
-        showWeekWeather(props.currentWeather?.name as string)
-      }
+      showWeekWeather(props.currentWeather?.name as string)
     }
   }
-)
+})
 
 function toggleActiveButton(buttonType: string) {
   activeButton.value = buttonType
@@ -137,7 +141,12 @@ function showDayWeather() {
 async function showWeekWeather(city: string) {
   week.value = true
   day.value = false
+  weekWeather.value = await getWeatherData(city)
+}
+
+async function getWeatherData(city: string) {
   try {
+    weekLoading.value = true
     const { data } = await axios.get(
       `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`
     )
@@ -146,7 +155,8 @@ async function showWeekWeather(city: string) {
 
     const dailyForecasts = getDailyFortecasts(groupedForecasts)
 
-    weekWeather.value = dailyForecasts
+    weekLoading.value = false
+    return dailyForecasts
   } catch (error) {
     console.error(error)
   }
@@ -154,29 +164,14 @@ async function showWeekWeather(city: string) {
 </script>
 
 <style lang="scss">
+@import '@/assets/styles/_variables.scss';
 .buttons-wrapper {
   display: flex;
   justify-content: space-between;
   margin-top: 15px;
 }
 .weather-button {
-  padding: 10px;
-  font-size: 16px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  transition: 0.3s ease-in-out;
   margin-right: 20px;
-
-  &.active {
-    background-color: #ccc;
-  }
-
-  &:hover {
-    background-color: #ccc;
-  }
 
   &:last-child {
     margin-right: 0;
@@ -222,10 +217,10 @@ async function showWeekWeather(city: string) {
 .weather-small {
   margin-top: 20px;
   font-size: 14px;
-  color: #8f8d8d;
+  color: $color-secondary;
 
   span {
-    color: #000;
+    color: $color-text;
     font-weight: 700;
     margin-left: 6px;
   }
@@ -235,5 +230,45 @@ async function showWeekWeather(city: string) {
   font-size: 20px;
   margin-bottom: 20px;
   text-align: center;
+}
+
+@media (min-width: 360px) and (max-width: 768px) {
+  .weather-info-wrapper {
+    overflow: hidden;
+  }
+  .buttons-wrapper {
+    flex-direction: column;
+    margin-bottom: 25px;
+  }
+
+  .buttons-info {
+    order: 2;
+    margin-top: 15px;
+  }
+}
+
+@media (min-width: 360px) and (max-width: 992px) {
+  .weather-week {
+    display: block;
+    white-space: nowrap;
+    overflow-x: auto;
+    margin-bottom: -20px;
+    padding-bottom: 30px;
+    padding-left: 15px;
+  }
+
+  .weather-week-wrapper {
+    justify-content: center;
+    align-items: center;
+    width: 170px;
+    display: inline-flex;
+    border-radius: 5px;
+    margin-right: 15px;
+    flex-direction: column;
+    height: auto;
+    &:last-child {
+      margin-right: 15px;
+    }
+  }
 }
 </style>

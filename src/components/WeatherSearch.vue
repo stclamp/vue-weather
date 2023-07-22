@@ -8,7 +8,9 @@
       :disabled="favorites"
     />
     <div v-if="showAutoComplete" class="autocomplete">
+      <SpinnerIcon v-if="loading" />
       <div
+        v-else
         v-for="(city, index) in autoCompleteCities"
         :key="index"
         @click="selectCity(city)"
@@ -24,7 +26,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import axios from 'axios'
-
+import SpinnerIcon from '@/components/SpinnerIcon.vue'
 import type { CityInfo, CurrentWeather } from '@/types/index.ts'
 
 interface SearchProps {
@@ -35,33 +37,31 @@ interface SearchProps {
 }
 
 const props = defineProps<SearchProps>()
+const emit = defineEmits(['currentWeather', 'favoritesWeather', 'startLoading', 'endLoading'])
 
 const cityInput = ref<string>('')
 const apiKey = import.meta.env.VITE_OPEN_WEATHER_API
 const showAutoComplete = ref<boolean>(false)
 const autoCompleteCities = ref<CityInfo[]>([])
-const emit = defineEmits(['currentWeather', 'favoritesWeather'])
+const loading = ref<boolean>(false)
 
 onMounted(async () => {
-  watch(
-    () => props.currentUserCity,
-    async () => {
-      if (props.currentUserCity) {
-        const weatherInfo = await getWeatherData(props.currentUserCity)
-        emit('currentWeather', weatherInfo)
-      }
+  watch([() => props.currentUserCity, () => props.localCityName], async () => {
+    if (props.currentUserCity) {
+      const weatherInfo = await getWeatherData(props.currentUserCity)
+      emit('currentWeather', weatherInfo)
     }
-  )
 
-  if (props.favorites) {
-    const weatherInfo = await getWeatherData(props.localCityName as string)
-    emit('favoritesWeather', weatherInfo)
-  }
+    if (props.favorites) {
+      const weatherInfo = await getWeatherData(props.localCityName as string)
+      emit('favoritesWeather', weatherInfo)
+    }
+  })
 })
 
 async function onCityInputChange() {
   if (cityInput.value.length >= 1) {
-    await fetchAutoCompleteCities(cityInput.value)
+    autoCompleteCities.value = await fetchAutoCompleteCities(cityInput.value)
   } else {
     showAutoComplete.value = false
   }
@@ -76,11 +76,12 @@ async function selectCity(city: CityInfo) {
 
 async function fetchAutoCompleteCities(query: string) {
   try {
+    loading.value = true
     const response = await axios.get(
       `https://api.openweathermap.org/geo/1.0/direct?q=${query}&limit=5&appid=${apiKey}`
     )
 
-    autoCompleteCities.value = response.data.map((city: CityInfo) => ({
+    const cities = response.data.map((city: CityInfo) => ({
       name: city.name,
       country: city.country,
       lon: city.lon,
@@ -88,6 +89,9 @@ async function fetchAutoCompleteCities(query: string) {
     }))
 
     showAutoComplete.value = true
+    loading.value = false
+
+    return cities
   } catch (error) {
     console.error(error)
   }
@@ -95,6 +99,8 @@ async function fetchAutoCompleteCities(query: string) {
 
 async function getWeatherData(city: string) {
   try {
+    emit('startLoading')
+
     const { data } = await axios.get(
       `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`
     )
@@ -108,38 +114,52 @@ async function getWeatherData(city: string) {
       name: data.name
     }
 
+    emit('endLoading')
     return weatherInfo
   } catch (error) {
+    loading.value = false
     console.error(error)
   }
 }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
+@import '@/assets/styles/_variables.scss';
+
 .autocomplete-container {
   position: relative;
   width: 50%;
 }
 input {
-  width: 100%;
+  border-radius: 10px;
+  background: $secondary-bg;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25) inset;
   padding: 10px;
-  font-size: 16px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
+  width: 100%;
+  border: none;
+  color: $color-secondary;
+  font-size: 17px;
+  font-style: normal;
+  font-weight: 400;
+
+  &::placeholder {
+    color: $color-secondary;
+  }
 }
 
 .autocomplete {
   position: absolute;
   top: 100%;
-  background-color: #f9f9f9;
-  border: 1px solid #ccc;
-  z-index: 1;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: $main-bg;
+  // border: 1px solid #ccc;
+  z-index: 999;
   max-height: 400px;
   min-width: 400px;
   overflow-y: auto;
 }
 
-.autocomplete div {
+.autocomplete_wrapper {
   padding: 10px 25px;
   font-size: 18px;
   cursor: pointer;
@@ -148,13 +168,25 @@ input {
   transition: 0.3s ease-in-out;
 
   &:hover {
-    background-color: #979595;
+    background: $secondary-bg;
   }
 }
 
 input[disabled] {
-  background-color: #c9c9c9;
-  color: #999;
   cursor: not-allowed;
+}
+
+@media (min-width: 360px) and (max-width: 768px) {
+  .autocomplete-container {
+    width: 100%;
+  }
+
+  .autocomplete {
+    min-width: 100%;
+  }
+
+  input {
+    margin-bottom: 20px;
+  }
 }
 </style>

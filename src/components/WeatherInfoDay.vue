@@ -3,32 +3,29 @@
     <div class="weather-temp-wrapper">
       <img
         class="weather-icon"
-        :src="`http://openweathermap.org/img/w/${props.currentWeather?.weather.icon}.png`"
+        :src="`http://openweathermap.org/img/w/${currentWeather?.weather.icon}.png`"
         :alt="props.currentWeather?.weather.description"
       />
       <p class="weather-temp">
-        {{ currentFavorites ? currentFavoritesWeather?.temp : props.currentWeather?.temp }}°
+        {{ currentFavorites ? currentFavoritesWeather?.temp : currentWeather?.temp }}°
       </p>
     </div>
     <p class="weather-small">
       Ощущается как:<span
         >{{
-          currentFavorites ? currentFavoritesWeather?.feelsLike : props.currentWeather?.feelsLike
+          currentFavorites ? currentFavoritesWeather?.feelsLike : currentWeather?.feelsLike
         }}°</span
       >
     </p>
     <p class="weather-small">
       Ветер:<span
-        >{{
-          currentFavorites ? currentFavoritesWeather?.wind : props.currentWeather?.wind
-        }}
-        м/с</span
+        >{{ currentFavorites ? currentFavoritesWeather?.wind : currentWeather?.wind }} м/с</span
       >
     </p>
     <p class="weather-small">
       Влажность:<span
         >{{
-          currentFavorites ? currentFavoritesWeather?.humidity : props.currentWeather?.humidity
+          currentFavorites ? currentFavoritesWeather?.humidity : currentWeather?.humidity
         }}%</span
       >
     </p>
@@ -36,14 +33,14 @@
 </template>
 
 <script setup lang="ts">
-import type { CurrentWeather } from '@/types'
 import { ref, watch } from 'vue'
+import type { CurrentWeather } from '@/types'
 
 interface WeatherInfoDayProps {
-  cardIndex: number
   currentWeather: CurrentWeather | null
   favorites?: boolean
   favoritesWeather?: CurrentWeather
+  loading: boolean
 }
 
 const props = defineProps<WeatherInfoDayProps>()

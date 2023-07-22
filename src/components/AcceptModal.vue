@@ -1,6 +1,6 @@
 <template>
-  <div class="confirm-modal">
-    <div class="confirm-modal-wrapper">
+  <div class="modal" @click="closeModal">
+    <div class="modal-wrapper" @click.stop>
       <h4 class="modal-title">Вы уверены, что хотите удалить?</h4>
       <div class="modal-buttons">
         <button class="modal-yes modal-button" @click="confirmDelete">Да</button>
@@ -11,60 +11,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-
-interface ConfirmModalProps {
-  isShowModal: boolean
-}
-
-const props = defineProps<ConfirmModalProps>()
 const emit = defineEmits(['deleteConfirmed', 'closeModal'])
 
-const showModal = ref<boolean>(props.isShowModal)
-
-watch(
-  () => props.isShowModal,
-  (newValue) => {
-    showModal.value = newValue
-  }
-)
-
 function confirmDelete() {
-  showModal.value = false
   emit('deleteConfirmed')
 }
 
 function closeModal() {
-  showModal.value = false
   emit('closeModal')
 }
 </script>
 
-<style lang="scss">
-.confirm-modal {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background-color: rgba(0, 0, 0, 0.114);
-  position: fixed;
-  left: 0;
-  top: 0;
-}
-
-.confirm-modal-wrapper {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  padding: 80px;
-  border-radius: 8px;
-  background-color: #fff;
-}
-
-.modal-title {
-  font-size: 26px;
-}
-
+<style scoped lang="scss">
 .modal-buttons {
   display: flex;
   justify-content: center;

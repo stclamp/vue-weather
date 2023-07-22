@@ -26,10 +26,3 @@ interface StarIconProps {
 
 defineProps<StarIconProps>()
 </script>
-
-<style lang="scss">
-svg {
-  width: width;
-  height: height;
-}
-</style>

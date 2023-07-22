@@ -1,12 +1,11 @@
 <template>
   <div v-if="cards.length > 0">
-    <template v-for="(card, index) in cards" :key="card">
+    <template v-for="(card, index) in cards" :key="index">
       <WeatherCard
         :cardIndex="index"
         :localCityName="card"
         :favorites="favorites"
         @removeFromFavorites="handleDelete"
-        @favoritesWeather="handleChangeFavoritesWeather"
       />
     </template>
   </div>
@@ -16,9 +15,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import WeatherCard from '@/components/WeatherCard.vue'
-import type { CurrentWeather } from '@/types'
 
 const cards = ref<string[]>([])
+const favorites = ref<boolean>(true)
 
 onMounted(() => {
   for (let i = 0; i < localStorage.length; i++) {
@@ -27,16 +26,17 @@ onMounted(() => {
   }
 })
 
-const favorites = ref<boolean>(true)
-const favoritesValue = ref<CurrentWeather[]>([])
-
 function handleDelete(city: string) {
   cards.value = cards.value.filter((item) => item !== city)
 }
-
-function handleChangeFavoritesWeather(value: CurrentWeather[]) {
-  favoritesValue.value = value
-}
 </script>
 
-<style></style>
+<style lang="scss">
+@import '@/assets/styles/_mixins.scss';
+.empty-favorites {
+  @include box-shadow;
+  border-radius: 10px;
+  padding: 25px;
+  margin-top: 30px;
+}
+</style>
