@@ -53,7 +53,7 @@ onMounted(async () => {
     }
 
     if (props.favorites) {
-      const weatherInfo = await getWeatherData(props.localCityName as string)
+      const weatherInfo = await getWeatherData(props.localCityName)
       emit('favoritesWeather', weatherInfo)
     }
   })
@@ -97,25 +97,27 @@ async function fetchAutoCompleteCities(query: string) {
   }
 }
 
-async function getWeatherData(city: string) {
+async function getWeatherData(city: string | undefined) {
   try {
-    emit('startLoading')
+    if (city) {
+      emit('startLoading')
 
-    const { data } = await axios.get(
-      `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`
-    )
+      const { data } = await axios.get(
+        `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`
+      )
 
-    const weatherInfo: CurrentWeather = {
-      temp: data.main.temp.toFixed(0),
-      feelsLike: data.main.feels_like.toFixed(0),
-      humidity: data.main.humidity.toFixed(0),
-      wind: data.wind.speed.toFixed(0),
-      weather: data.weather[0],
-      name: data.name
+      const weatherInfo: CurrentWeather = {
+        temp: data.main.temp.toFixed(0),
+        feelsLike: data.main.feels_like.toFixed(0),
+        humidity: data.main.humidity.toFixed(0),
+        wind: data.wind.speed.toFixed(0),
+        weather: data.weather[0],
+        name: data.name
+      }
+
+      emit('endLoading')
+      return weatherInfo
     }
-
-    emit('endLoading')
-    return weatherInfo
   } catch (error) {
     loading.value = false
     console.error(error)

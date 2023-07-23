@@ -109,28 +109,25 @@ function closeWarningModal() {
 }
 
 function addToFavorite() {
+  if (localStorage.length >= 5) {
+    isWarning.value = true
+    return
+  }
+
   if (buttonText.value === EButton.ADD) {
-    if (localStorage.length >= 5) {
-      isWarning.value = true
-      return
-    }
-    localStorage.setItem(
-      `weather_block_${currentWeather.value?.name}`,
-      currentWeather.value?.name as string
-    )
+    currentWeather.value &&
+      localStorage.setItem(
+        `weather_block_${currentWeather.value?.name}`,
+        currentWeather.value?.name
+      )
     buttonText.value = EButton.REMOVE
     starColor = EButton.ORANGE
   } else {
+    localStorage.removeItem(`weather_block_${currentWeather.value?.name}`)
+    buttonText.value = EButton.ADD
+    starColor = EButton.TRANSPARENT
     if (props.favorites) {
-      localStorage.removeItem(`weather_block_${favoritesWeather?.value?.name}`)
-      buttonText.value = EButton.ADD
-      starColor = EButton.TRANSPARENT
-
       emit('removeFromFavorites', props.localCityName)
-    } else {
-      localStorage.removeItem(`weather_block_${currentWeather.value?.name}`)
-      buttonText.value = EButton.ADD
-      starColor = EButton.TRANSPARENT
     }
   }
 }

@@ -40,9 +40,9 @@ watch(
     localCity.value = newValue[1]
 
     if (props.favorites) {
-      weatherData.value = await getData(props.favoritesWeather?.name as string)
+      weatherData.value = await getData(props.favoritesWeather?.name)
     } else {
-      weatherData.value = await getData(localCity.value as string)
+      weatherData.value = await getData(localCity.value)
     }
 
     if (weatherData.value && chartInstance) {
@@ -61,25 +61,27 @@ watch(
   }
 )
 
-async function getData(city: string) {
+async function getData(city: string | undefined) {
   try {
-    const { data } = await axios.get(
-      `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`
-    )
-    const listOfDates = data.list
-      .map((item: ForecastData, i: number) => {
-        if (i > 14) return
-        return { date: convertUnixToDateTime(item.dt), temp: +item.main.temp.toFixed(0) }
-      })
-      .filter(Boolean)
+    if (city) {
+      const { data } = await axios.get(
+        `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`
+      )
+      const listOfDates = data.list
+        .map((item: ForecastData, i: number) => {
+          if (i > 14) return
+          return { date: convertUnixToDateTime(item.dt), temp: +item.main.temp.toFixed(0) }
+        })
+        .filter(Boolean)
 
-    const groupedForecasts = groupForecastsByDate(data.list)
-    const listOfWeeDates = getDailyFortecasts(groupedForecasts).map((date) => ({
-      date: date.date,
-      temp: date.averageTemperature
-    }))
+      const groupedForecasts = groupForecastsByDate(data.list)
+      const listOfWeeDates = getDailyFortecasts(groupedForecasts).map((date) => ({
+        date: date.date,
+        temp: date.averageTemperature
+      }))
 
-    return props.day ? listOfDates : listOfWeeDates
+      return props.day ? listOfDates : listOfWeeDates
+    }
   } catch (error) {
     console.error(error)
   }

@@ -105,9 +105,9 @@ watch([() => props.currentWeather, () => props.favoritesWeather], () => {
     showDayWeather()
   } else {
     if (props.favorites) {
-      showWeekWeather(props.favoritesWeather?.name as string)
+      showWeekWeather(props.favoritesWeather?.name)
     } else {
-      showWeekWeather(props.currentWeather?.name as string)
+      showWeekWeather(props.currentWeather?.name)
     }
   }
 })
@@ -118,9 +118,9 @@ function toggleActiveButton(buttonType: string) {
     showDayWeather()
   } else {
     if (props.favorites) {
-      showWeekWeather(props.favoritesWeather?.name as string)
+      showWeekWeather(props.favoritesWeather?.name)
     } else {
-      showWeekWeather(props.currentWeather?.name as string)
+      showWeekWeather(props.currentWeather?.name)
     }
   }
 }
@@ -138,10 +138,12 @@ function showDayWeather() {
   day.value = true
 }
 
-async function showWeekWeather(city: string) {
-  week.value = true
-  day.value = false
-  weekWeather.value = await getWeatherData(city)
+async function showWeekWeather(city: string | undefined) {
+  if (city) {
+    week.value = true
+    day.value = false
+    weekWeather.value = await getWeatherData(city)
+  }
 }
 
 async function getWeatherData(city: string) {
