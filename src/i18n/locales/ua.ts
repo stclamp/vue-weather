@@ -1,3 +1,5 @@
+// import type { LocaleMessages } from 'vue-i18n/dist/vue-i18n.js'
+
 export default {
   weatherName: 'Погода',
   home: 'Головна',
@@ -16,9 +18,5 @@ export default {
   acceptModalNo: 'Ні',
   warningModalTextBlock: 'Максимум 5 блоків. Видаліть попередній, щоб додати новий!',
   warningModalTextFavorites: 'Максимум 5 блоків в обраному!',
-  nothingInFavorites: 'Поки що нічого немає в обраному...',
-  locale: {
-    en: 'Англійська',
-    ua: 'Українська'
-  }
+  nothingInFavorites: 'Поки що нічого немає в обраному...'
 }

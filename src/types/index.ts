@@ -1,5 +1,3 @@
-import i18n from '@/i18n'
-
 interface LocalNames {
   [key: string]: string
 }

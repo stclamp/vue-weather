@@ -16,11 +16,5 @@ export default {
   acceptModalNo: 'No',
   warningModalTextBlock: 'Maximum 5 blocks. Delete the previous one to add a new one!',
   warningModalTextFavorites: 'Maximum 5 blocks in favorites!',
-  nothingInFavorites: 'Nothing in favorites yet...',
-  locale: {
-    en: 'English',
-    ua: 'Ukrainian'
-  }
+  nothingInFavorites: 'Nothing in favorites yet...'
 }
-
-// export default en
