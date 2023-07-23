@@ -83,7 +83,6 @@ onMounted(() => {
         starColor = EButton.TRANSPARENT
       }
       emit('favoritesWeather', favoritesWeather.value)
-      console.log(`${props.cardIndex}: ${favoritesWeather.value?.name}`)
     }
   )
   getUserLocation()
