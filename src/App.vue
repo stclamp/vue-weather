@@ -1,15 +1,25 @@
-<script setup lang="ts">
-// import Chart from 'chart.js'
-</script>
-
 <template>
   <div class="container">
-    <h1>Погода</h1>
-    <RouterLink to="/">Главная</RouterLink>
-    <RouterLink to="/favorites">Избранное</RouterLink>
+    <h1>{{ $t('weatherName') }}</h1>
+    <div class="home-wrapper">
+      <div class="links-wrapper">
+        <RouterLink :to="Translation.i18nRoute({ name: 'home' })">{{ $t('home') }}</RouterLink>
+        <RouterLink :to="Translation.i18nRoute({ name: 'favorites' })">{{
+          $t('favorites')
+        }}</RouterLink>
+      </div>
+      <div class="localization-wrapper">
+        <LanguageSwitcher />
+      </div>
+    </div>
     <RouterView></RouterView>
   </div>
 </template>
+
+<script setup lang="ts">
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
+import Translation from '@/i18n/translation.ts'
+</script>
 
 <style lang="scss" scoped>
 @import '@/assets/styles/_variables.scss';
@@ -28,13 +38,25 @@ a {
   }
 }
 
-.router-link-active {
+.router-link-exact-active {
   color: $color-text;
   border-bottom: 1px solid $color-text;
 
   &:hover {
     border-bottom: 1px solid $color-secondary;
   }
+}
+
+.home-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.localization-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 @media (max-width: 1200px) {
@@ -44,7 +66,10 @@ a {
   }
 }
 
-@media (max-width: 360px) {
+@media (min-width: 360px) and (max-width: 768px) {
+  .home-wrapper {
+    margin-top: 15px;
+  }
   input {
     font-size: 14px;
   }

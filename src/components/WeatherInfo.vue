@@ -5,7 +5,7 @@
         <ButtonPrimary
           v-for="button in buttons"
           :key="button.type"
-          :text="button.label"
+          :text="(button.label as string)"
           class="weather-button"
           :class="{ active: activeButton === button.type }"
           @click="toggleActiveButton(button.type)"
@@ -13,14 +13,14 @@
       </div>
       <div class="buttons-delete">
         <ButtonPrimary
-          :text="'Удалить'"
+          :text="$t('removeButton')"
           class="weather-button button-delete"
           @click="handleOpenModal"
           v-if="!props.favorites"
         />
       </div>
     </div>
-    <SpinnerIcon v-if="props.loading" />
+    <SpinnerIcon v-if="props.loading" class="info-spinner" />
     <p class="weather-name" v-if="!loading">
       {{ favorites ? favoritesWeather?.name : currentWeather?.name }}
     </p>
@@ -59,8 +59,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import axios from 'axios'
+import i18n from '@/i18n'
 import WeatherChart from '@/components/WeatherChart.vue'
 import WeatherInfoDay from '@/components/WeatherInfoDay.vue'
 import WeatherInfoWeek from '@/components/WeatherInfoWeek.vue'
@@ -84,35 +85,42 @@ const props = defineProps<InfoProps>()
 
 const apiKey = import.meta.env.VITE_OPEN_WEATHER_API
 
-const activeButton = ref<string>('day')
+const activeButton = ref<EDayWeekButton>(EDayWeekButton.DAY_BUTTON_TYPE)
 const showModal = ref<boolean>(false)
 const day = ref<boolean>(true)
 const week = ref<boolean>(false)
 const weekWeather = ref<WeekWeather[] | null | undefined>(null)
 const weekLoading = ref<boolean>(false)
 
-const buttons = [
-  { type: EDayWeekButton.DAY_BUTTON_TYPE, label: EDayWeekButton.DAY_BUTTON_LABEL },
-  { type: EDayWeekButton.WEEK_BUTTON_TYPE, label: EDayWeekButton.WEEK_BUTTON_LABEL }
-]
+const locale = computed(() => i18n.global.locale.value)
+
+const buttons = computed(() => {
+  return [
+    { type: EDayWeekButton.DAY_BUTTON_TYPE, label: i18n.global.t('dayButton') },
+    { type: EDayWeekButton.WEEK_BUTTON_TYPE, label: i18n.global.t('weekButton') }
+  ]
+})
 
 onMounted(() => {
   showDayWeather()
 })
 
-watch([() => props.currentWeather, () => props.favoritesWeather], () => {
-  if (activeButton.value === EDayWeekButton.DAY_BUTTON_TYPE) {
-    showDayWeather()
-  } else {
-    if (props.favorites) {
-      showWeekWeather(props.favoritesWeather?.name)
+watch(
+  [() => props.currentWeather, () => props.favoritesWeather, () => i18n.global.locale.value],
+  () => {
+    if (activeButton.value === EDayWeekButton.DAY_BUTTON_TYPE) {
+      showDayWeather()
     } else {
-      showWeekWeather(props.currentWeather?.name)
+      if (props.favorites) {
+        showWeekWeather(props.favoritesWeather?.name)
+      } else {
+        showWeekWeather(props.currentWeather?.name)
+      }
     }
   }
-})
+)
 
-function toggleActiveButton(buttonType: string) {
+function toggleActiveButton(buttonType: EDayWeekButton) {
   activeButton.value = buttonType
   if (buttonType === EDayWeekButton.DAY_BUTTON_TYPE) {
     showDayWeather()
@@ -150,12 +158,12 @@ async function getWeatherData(city: string) {
   try {
     weekLoading.value = true
     const { data } = await axios.get(
-      `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`
+      `https://api.openweathermap.org/data/2.5/forecast?q=${city}&lang=${locale.value}&appid=${apiKey}&units=metric`
     )
 
     const groupedForecasts = groupForecastsByDate(data.list)
 
-    const dailyForecasts = getDailyFortecasts(groupedForecasts)
+    const dailyForecasts = getDailyFortecasts(groupedForecasts, locale.value)
 
     weekLoading.value = false
     return dailyForecasts
@@ -182,6 +190,10 @@ async function getWeatherData(city: string) {
 
 .buttons-info {
   display: flex;
+}
+
+.weather-button {
+  min-width: 96px;
 }
 
 .weather-name {
@@ -240,6 +252,10 @@ async function getWeatherData(city: string) {
   text-align: center;
 }
 
+.info-spinner {
+  min-height: 500px;
+}
+
 @media (min-width: 360px) and (max-width: 768px) {
   .weather-info-wrapper {
     overflow: hidden;
@@ -253,6 +269,10 @@ async function getWeatherData(city: string) {
     order: 2;
     margin-top: 15px;
   }
+}
+
+.button-delete {
+  min-width: 103px;
 }
 
 @media (min-width: 360px) and (max-width: 992px) {

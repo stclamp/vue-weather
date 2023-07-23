@@ -9,7 +9,7 @@
       />
     </template>
   </div>
-  <div class="empty-favorites weather-card" v-else>Пока еще ничего нет в избранном...</div>
+  <div class="empty-favorites weather-card" v-else>{{ $t('nothingInFavorites') }}</div>
 </template>
 
 <script setup lang="ts">
@@ -18,10 +18,15 @@ import WeatherCard from '@/components/WeatherCard.vue'
 
 const cards = ref<string[]>([])
 const favorites = ref<boolean>(true)
+const languageExist = localStorage.getItem('language')
 
 onMounted(() => {
   for (let i = 0; i < localStorage.length; i++) {
-    const card = localStorage.getItem(localStorage.key(i) as string)
+    const key = localStorage.key(i) as string
+    if (localStorage.getItem(key) === languageExist) {
+      continue
+    }
+    const card = localStorage.getItem(key)
     cards.value.push(card as string)
   }
 })

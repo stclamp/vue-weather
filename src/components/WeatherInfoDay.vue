@@ -11,19 +11,19 @@
       </p>
     </div>
     <p class="weather-small">
-      Ощущается как:<span
+      {{ $t('feelsLike') }}:<span
         >{{
           currentFavorites ? currentFavoritesWeather?.feelsLike : currentWeather?.feelsLike
         }}°</span
       >
     </p>
     <p class="weather-small">
-      Ветер:<span
+      {{ $t('wind') }}:<span
         >{{ currentFavorites ? currentFavoritesWeather?.wind : currentWeather?.wind }} м/с</span
       >
     </p>
     <p class="weather-small">
-      Влажность:<span
+      {{ $t('humidity') }}:<span
         >{{
           currentFavorites ? currentFavoritesWeather?.humidity : currentWeather?.humidity
         }}%</span

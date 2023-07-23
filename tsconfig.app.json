@@ -6,6 +6,7 @@
     "src/**/*.ts",
     "src/types/index.ts",
     "src/helpers/convertUnixToTime.ts",
+    "src/i18n/*.ts",
     "src/**/*.vue"
   ],
   "exclude": ["src/**/__tests__/*"],

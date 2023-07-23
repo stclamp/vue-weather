@@ -5,7 +5,7 @@
   <ButtonPrimary :text="'+'" @click="addWeatherCard" class="add-block" />
   <WarningModal
     v-if="isWarning"
-    :text="'Максимум 5 блоков. Удалите предыдущий, что бы добавить новый!'"
+    :text="$t('warningModalTextBlock')"
     @closeWarningModal="closeWarningModal"
   />
 </template>

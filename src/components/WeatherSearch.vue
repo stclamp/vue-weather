@@ -1,11 +1,10 @@
 <template>
-  <div class="autocomplete-container">
+  <div class="autocomplete-container" v-if="!favorites">
     <input
       type="text"
       v-model="cityInput"
       @input="onCityInputChange"
-      placeholder="Введите город"
-      :disabled="favorites"
+      :placeholder="$t('searchPlaceholder')"
     />
     <div v-if="showAutoComplete" class="autocomplete">
       <SpinnerIcon v-if="loading" />
@@ -24,8 +23,9 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import axios from 'axios'
+import i18n from '@/i18n'
 import SpinnerIcon from '@/components/SpinnerIcon.vue'
 import type { CityInfo, CurrentWeather } from '@/types/index.ts'
 
@@ -36,11 +36,14 @@ interface SearchProps {
   localCityName?: string
 }
 
+const apiKey = import.meta.env.VITE_OPEN_WEATHER_API
+
+const locale = computed(() => i18n.global.locale.value)
+
 const props = defineProps<SearchProps>()
 const emit = defineEmits(['currentWeather', 'favoritesWeather', 'startLoading', 'endLoading'])
 
 const cityInput = ref<string>('')
-const apiKey = import.meta.env.VITE_OPEN_WEATHER_API
 const showAutoComplete = ref<boolean>(false)
 const autoCompleteCities = ref<CityInfo[]>([])
 const loading = ref<boolean>(false)
@@ -103,7 +106,7 @@ async function getWeatherData(city: string | undefined) {
       emit('startLoading')
 
       const { data } = await axios.get(
-        `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`
+        `https://api.openweathermap.org/data/2.5/weather?q=${city}&lang=${locale.value}&appid=${apiKey}&units=metric`
       )
 
       const weatherInfo: CurrentWeather = {
@@ -174,10 +177,6 @@ input {
   }
 }
 
-input[disabled] {
-  cursor: not-allowed;
-}
-
 @media (min-width: 360px) and (max-width: 768px) {
   .autocomplete-container {
     width: 100%;
@@ -185,10 +184,6 @@ input[disabled] {
 
   .autocomplete {
     min-width: 100%;
-  }
-
-  input {
-    margin-bottom: 20px;
   }
 }
 </style>

@@ -1,3 +1,5 @@
+import i18n from '@/i18n'
+
 interface LocalNames {
   [key: string]: string
 }
@@ -11,18 +13,9 @@ export interface CityInfo {
   state: string
 }
 
-export enum EButton {
-  ADD = 'Добавить в избранное',
-  REMOVE = 'Убрать из избранного',
-  ORANGE = '#DE9426',
-  TRANSPARENT = 'transparent'
-}
-
 export enum EDayWeekButton {
   DAY_BUTTON_TYPE = 'day',
-  DAY_BUTTON_LABEL = 'День',
-  WEEK_BUTTON_TYPE = 'week',
-  WEEK_BUTTON_LABEL = 'Неделя'
+  WEEK_BUTTON_TYPE = 'week'
 }
 
 export interface CurrentWeather {

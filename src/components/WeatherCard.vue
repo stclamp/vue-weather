@@ -11,10 +11,11 @@
         :currentUserCity="currentUserCity"
         :localCityName="localCityName"
       />
+      <div v-if="favorites" class="favorites-count">{{ $t('favorites') }} #{{ cardIndex + 1 }}</div>
       <ButtonPrimary
         class="add-to-favorite"
-        :text="buttonText"
-        :starColor="starColor"
+        :text="buttonText.text"
+        :starColor="(starColor as string)"
         @click="addToFavorite"
         :hasIcon="true"
       />
@@ -32,19 +33,29 @@
   </div>
   <WarningModal
     v-if="isWarning"
-    :text="'Максимум 5 блоков в избранном!'"
+    :text="$t('warningModalTextFavorites')"
     @closeWarningModal="closeWarningModal"
   />
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed, reactive } from 'vue'
 import axios from 'axios'
+import i18n from '@/i18n'
 import WeatherSearch from '@/components/WeatherSearch.vue'
 import WeatherInfo from '@/components/WeatherInfo.vue'
-import { EButton, type CurrentWeather } from '@/types/index'
-import WarningModal from './WarningModal.vue'
-import ButtonPrimary from './ButtonPrimary.vue'
+import WarningModal from '@/components/WarningModal.vue'
+import ButtonPrimary from '@/components/ButtonPrimary.vue'
+import { type CurrentWeather } from '@/types/index'
+
+const EButton = computed(() => {
+  return {
+    ADD: i18n.global.t('addToFavorite'),
+    REMOVE: i18n.global.t('removeFromFavorite'),
+    ORANGE: '#DE9426',
+    TRANSPARENT: 'transparent'
+  }
+})
 
 interface WeatherCardProps {
   cardIndex: number
@@ -57,9 +68,11 @@ const props = defineProps<WeatherCardProps>()
 
 const emit = defineEmits(['removeFromFavorites', 'favoritesWeather'])
 
-let starColor = EButton.TRANSPARENT
+let starColor = EButton.value.TRANSPARENT
 
-const buttonText = ref<string>(EButton.ADD)
+const buttonText = reactive({
+  text: EButton.value.ADD
+})
 const currentWeather = ref<CurrentWeather | null>(null)
 const currentUserCity = ref<string>('')
 const favoritesWeather = ref<CurrentWeather>()
@@ -71,16 +84,17 @@ onMounted(() => {
     [
       () => currentWeather.value?.name,
       () => favoritesWeather.value?.name,
-      () => props.localCityName
+      () => props.localCityName,
+      () => i18n.global.locale.value
     ],
     () => {
       const localCityExist = localStorage.getItem(`weather_block_${currentWeather.value?.name}`)
       if (localCityExist === currentWeather.value?.name || props.favorites) {
-        buttonText.value = EButton.REMOVE
-        starColor = EButton.ORANGE
+        buttonText.text = EButton.value.REMOVE
+        starColor = EButton.value.ORANGE
       } else {
-        buttonText.value = EButton.ADD
-        starColor = EButton.TRANSPARENT
+        buttonText.text = EButton.value.ADD
+        starColor = EButton.value.TRANSPARENT
       }
       emit('favoritesWeather', favoritesWeather.value)
     }
@@ -109,23 +123,22 @@ function closeWarningModal() {
 }
 
 function addToFavorite() {
-  if (localStorage.length >= 5) {
-    isWarning.value = true
-    return
-  }
-
-  if (buttonText.value === EButton.ADD) {
+  if (buttonText.text === EButton.value.ADD) {
+    if (localStorage.length >= 6) {
+      isWarning.value = true
+      return
+    }
     currentWeather.value &&
       localStorage.setItem(
         `weather_block_${currentWeather.value?.name}`,
         currentWeather.value?.name
       )
-    buttonText.value = EButton.REMOVE
-    starColor = EButton.ORANGE
+    buttonText.text = EButton.value.REMOVE
+    starColor = EButton.value.ORANGE
   } else {
     localStorage.removeItem(`weather_block_${currentWeather.value?.name}`)
-    buttonText.value = EButton.ADD
-    starColor = EButton.TRANSPARENT
+    buttonText.text = EButton.value.ADD
+    starColor = EButton.value.TRANSPARENT
     if (props.favorites) {
       emit('removeFromFavorites', props.localCityName)
     }
@@ -138,7 +151,7 @@ async function getUserLocation() {
 
     currentUserCity.value = data.city
   } catch (error) {
-    console.error('Ошибка при получении местоположения:', error)
+    console.error(error)
   }
 }
 </script>
@@ -168,6 +181,10 @@ async function getUserLocation() {
   }
 }
 
+.favorites-count {
+  font-size: 20px;
+}
+
 .button-text {
   margin-right: 15px;
 }
@@ -180,6 +197,10 @@ async function getUserLocation() {
 @media (min-width: 360px) and (max-width: 768px) {
   .weather-search-wrapper {
     flex-direction: column;
+  }
+
+  .add-to-favorite {
+    margin-top: 20px;
   }
 }
 </style>

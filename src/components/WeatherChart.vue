@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import moment from 'moment'
 import axios from 'axios'
 import Chart, { type TooltipItem, type TooltipModel } from 'chart.js/auto'
@@ -17,6 +17,7 @@ import { convertUnixToDateTime } from '@/helpers/convertUnixToTime.ts'
 import { groupForecastsByDate } from '@/helpers/groupForecasts'
 import { getDailyFortecasts } from '@/helpers/getDailyForecasts'
 import type { CurrentWeather, ForecastData, WeekWeather } from '@/types'
+import i18n from '@/i18n'
 
 interface WeatherChartProps {
   city: string | undefined
@@ -31,6 +32,8 @@ const apiKey = import.meta.env.VITE_OPEN_WEATHER_API
 
 const localCity = ref<string | null | undefined>(props.city || null)
 const weatherData = ref()
+
+const locale = computed(() => i18n.global.locale.value)
 
 let chartInstance: Chart<'line', (string | undefined)[], string> | null = null
 
@@ -65,7 +68,7 @@ async function getData(city: string | undefined) {
   try {
     if (city) {
       const { data } = await axios.get(
-        `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`
+        `https://api.openweathermap.org/data/2.5/forecast?q=${city}&lang=${locale.value}&appid=${apiKey}&units=metric`
       )
       const listOfDates = data.list
         .map((item: ForecastData, i: number) => {
@@ -75,7 +78,7 @@ async function getData(city: string | undefined) {
         .filter(Boolean)
 
       const groupedForecasts = groupForecastsByDate(data.list)
-      const listOfWeeDates = getDailyFortecasts(groupedForecasts).map((date) => ({
+      const listOfWeeDates = getDailyFortecasts(groupedForecasts, locale.value).map((date) => ({
         date: date.date,
         temp: date.averageTemperature
       }))

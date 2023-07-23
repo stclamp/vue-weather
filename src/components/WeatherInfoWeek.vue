@@ -12,10 +12,10 @@
         <p class="weather-temp">{{ day.averageTemperature }}°</p>
       </div>
       <p class="weather-small">
-        Ветер:<span>{{ day.averageWind }} м/с</span>
+        {{ $t('wind') }}:<span>{{ day.averageWind }} м/с</span>
       </p>
       <p class="weather-small">
-        Влажность:<span>{{ day.averageHumidity }}%</span>
+        {{ $t('humidity') }}:<span>{{ day.averageHumidity }}%</span>
       </p>
     </div>
   </div>

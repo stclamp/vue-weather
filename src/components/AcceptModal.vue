@@ -1,10 +1,12 @@
 <template>
   <div class="modal" @click="closeModal">
     <div class="modal-wrapper" @click.stop>
-      <h4 class="modal-title">Вы уверены, что хотите удалить?</h4>
+      <h4 class="modal-title">{{ $t('acceptModalText') }}</h4>
       <div class="modal-buttons">
-        <button class="modal-yes modal-button" @click="confirmDelete">Да</button>
-        <button class="modal-no modal-button" @click="closeModal">Нет</button>
+        <button class="modal-yes modal-button" @click="confirmDelete">
+          {{ $t('acceptModalYes') }}
+        </button>
+        <button class="modal-no modal-button" @click="closeModal">{{ $t('acceptModalNo') }}</button>
       </div>
     </div>
   </div>

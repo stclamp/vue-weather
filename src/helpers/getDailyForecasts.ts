@@ -1,6 +1,6 @@
 import type { GroupedForecast } from '@/types'
 
-export function getDailyFortecasts(groupedForecasts: GroupedForecast) {
+export function getDailyFortecasts(groupedForecasts: GroupedForecast, locale: string) {
   const dailyForecasts = Object.keys(groupedForecasts).map((date) => {
     const forecastsForDate = groupedForecasts[date]
 
@@ -14,12 +14,12 @@ export function getDailyFortecasts(groupedForecasts: GroupedForecast) {
       forecastsForDate.reduce((sum, forecast) => sum + forecast.main.humidity, 0) /
       forecastsForDate.length
 
-    const dayMonth = new Date(date).toLocaleDateString('ru-RU', {
+    const dayMonth = new Date(date).toLocaleDateString(locale, {
       day: '2-digit',
       month: '2-digit'
     })
 
-    const dayOfWeek = new Date(date).toLocaleDateString('ru-RU', {
+    const dayOfWeek = new Date(date).toLocaleDateString(locale, {
       weekday: 'short'
     })
 
