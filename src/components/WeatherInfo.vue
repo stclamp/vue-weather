@@ -69,7 +69,7 @@ import SpinnerIcon from '@/components/SpinnerIcon.vue'
 import ButtonPrimary from '@/components/ButtonPrimary.vue'
 import { groupForecastsByDate } from '@/helpers/groupForecasts'
 import { getDailyFortecasts } from '@/helpers/getDailyForecasts'
-import type { CurrentWeather, WeekWeather } from '@/types/index.ts'
+import { EDayWeekButton, type CurrentWeather, type WeekWeather } from '@/types/index.ts'
 
 interface InfoProps {
   currentWeather: CurrentWeather | null
@@ -92,8 +92,8 @@ const weekWeather = ref<WeekWeather[] | null | undefined>(null)
 const weekLoading = ref<boolean>(false)
 
 const buttons = [
-  { type: 'day', label: 'День' },
-  { type: 'week', label: 'Неделя' }
+  { type: EDayWeekButton.DAY_BUTTON_TYPE, label: EDayWeekButton.DAY_BUTTON_LABEL },
+  { type: EDayWeekButton.WEEK_BUTTON_TYPE, label: EDayWeekButton.WEEK_BUTTON_LABEL }
 ]
 
 onMounted(() => {
@@ -101,7 +101,7 @@ onMounted(() => {
 })
 
 watch([() => props.currentWeather, () => props.favoritesWeather], () => {
-  if (activeButton.value === 'day') {
+  if (activeButton.value === EDayWeekButton.DAY_BUTTON_TYPE) {
     showDayWeather()
   } else {
     if (props.favorites) {
@@ -114,7 +114,7 @@ watch([() => props.currentWeather, () => props.favoritesWeather], () => {
 
 function toggleActiveButton(buttonType: string) {
   activeButton.value = buttonType
-  if (buttonType === 'day') {
+  if (buttonType === EDayWeekButton.DAY_BUTTON_TYPE) {
     showDayWeather()
   } else {
     if (props.favorites) {
@@ -196,6 +196,11 @@ async function getWeatherData(city: string) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  min-height: 232px;
+}
+
+.week-spinner {
+  min-height: 232px;
 }
 
 .weather-week {
@@ -203,6 +208,7 @@ async function getWeatherData(city: string) {
   align-items: center;
   justify-content: space-between;
   flex-direction: row;
+  min-height: 232px;
 }
 
 .weather-temp-wrapper {

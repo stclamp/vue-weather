@@ -18,6 +18,13 @@ export enum EButton {
   TRANSPARENT = 'transparent'
 }
 
+export enum EDayWeekButton {
+  DAY_BUTTON_TYPE = 'day',
+  DAY_BUTTON_LABEL = 'День',
+  WEEK_BUTTON_TYPE = 'week',
+  WEEK_BUTTON_LABEL = 'Неделя'
+}
+
 export interface CurrentWeather {
   feelsLike: number
   humidity: number

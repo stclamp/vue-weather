@@ -162,6 +162,7 @@ async function getUserLocation() {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  min-width: 240px;
   span {
     margin-left: 10px;
   }

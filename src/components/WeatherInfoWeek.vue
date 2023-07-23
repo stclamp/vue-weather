@@ -19,7 +19,7 @@
       </p>
     </div>
   </div>
-  <SpinnerIcon v-else />
+  <SpinnerIcon v-else class="week-spinner" />
 </template>
 
 <script setup lang="ts">

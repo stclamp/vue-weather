@@ -8,6 +8,8 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, onUnmounted } from 'vue'
+
 interface WarningModalProps {
   text: string
 }
@@ -19,6 +21,19 @@ const emit = defineEmits(['openWarningModal', 'closeWarningModal'])
 function closeModal() {
   emit('closeWarningModal')
 }
+
+const overflow = document.body.style.overflow
+let paddingOffset = window.innerWidth - document.body.offsetWidth + 'px'
+
+onMounted(() => {
+  document.body.style.overflow = 'hidden'
+  document.body.style.paddingRight = paddingOffset
+})
+
+onUnmounted(() => {
+  document.body.style.overflow = overflow
+  document.body.style.paddingRight = '0'
+})
 </script>
 
 <style scoped lang="scss">
