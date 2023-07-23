@@ -22,6 +22,7 @@ function closeModal() {
 </script>
 
 <style scoped lang="scss">
+@import '@/assets/styles/_variables.scss';
 .modal-close {
   position: absolute;
   right: 20px;
@@ -30,5 +31,13 @@ function closeModal() {
   background: none;
   border: none;
   cursor: pointer;
+  color: $color-text;
+}
+
+@media (min-width: 360px) and (max-width: 768px) {
+  .modal-close {
+    right: 5px;
+    top: 5px;
+  }
 }
 </style>

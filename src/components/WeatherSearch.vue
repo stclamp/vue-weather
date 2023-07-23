@@ -152,10 +152,10 @@ input {
   top: 100%;
   border: 1px solid rgba(255, 255, 255, 0.2);
   background: $main-bg;
-  // border: 1px solid #ccc;
   z-index: 999;
   max-height: 400px;
   min-width: 400px;
+  width: 100%;
   overflow-y: auto;
 }
 

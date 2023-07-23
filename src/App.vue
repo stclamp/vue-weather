@@ -4,7 +4,7 @@
 
 <template>
   <div class="container">
-    <h1>Приложение Погоды на Vue.js</h1>
+    <h1>Погода</h1>
     <RouterLink to="/">Главная</RouterLink>
     <RouterLink to="/favorites">Избранное</RouterLink>
     <RouterView></RouterView>

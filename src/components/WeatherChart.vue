@@ -109,20 +109,17 @@ function createChart(weatherData: WeekWeather[], weatherChart: HTMLCanvasElement
       },
       options: {
         onResize(chart, size) {
-          if (size.width < 768) {
-            chart.canvas.width = size.width
-            chart.canvas.style.width = `${size.width}px`
-            chart.canvas.height = size.height
-            chart.canvas.style.height = `${size.height}px`
+          if (size.width < 1000) {
             if (chart.options.scales && chart.options.scales.x) {
               chart.options.scales.x.display = false
             }
           } else {
-            chart.canvas.style.width = `100%`
-            chart.canvas.style.height = `100%`
+            if (chart.options.scales && chart.options.scales.x) {
+              chart.options.scales.x.display = true
+            }
           }
         },
-        // responsive: true,
+        responsive: true,
         maintainAspectRatio: false,
         scales: {
           x: {
