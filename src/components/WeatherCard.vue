@@ -138,7 +138,7 @@ function addToFavorite() {
 
 async function getUserLocation() {
   try {
-    const { data } = await axios.get('http://ip-api.com/json')
+    const { data } = await axios.get('https://ipinfo.io/json?token=530a90b96baf45')
 
     currentUserCity.value = data.city
   } catch (error) {
