@@ -1,5 +1,7 @@
 import { createI18n } from 'vue-i18n'
-import ua from './locales/ua.ts'
+import ua from './locales/ua.json'
+
+import type { LocaleMessages } from 'vue-i18n/dist/vue-i18n.js'
 
 export default createI18n({
   locale: import.meta.env.VITE_DEFAULT_LOCALE,
@@ -7,5 +9,5 @@ export default createI18n({
   legacy: false,
   globalInjection: true,
   silentTranslationWarn: true,
-  messages: { ua }
+  messages: { ua: ua as LocaleMessages }
 })

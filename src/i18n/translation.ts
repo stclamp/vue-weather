@@ -1,4 +1,5 @@
 import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
+import type { LocaleMessages } from 'vue-i18n/dist/vue-i18n.js'
 import { nextTick } from 'vue'
 import i18n from '@/i18n'
 
@@ -28,7 +29,7 @@ const Translation = {
 
   async loadLocaleMessages(locale: string) {
     if (!i18n.global.availableLocales.includes(locale)) {
-      const messages = await import(`@/i18n/locales/${locale}.ts`)
+      const messages = (await import(`@/i18n/locales/${locale}.json`)) as LocaleMessages
       i18n.global.setLocaleMessage(locale, messages.default)
     }
 
