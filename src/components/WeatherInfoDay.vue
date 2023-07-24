@@ -19,7 +19,8 @@
     </p>
     <p class="weather-small">
       {{ $t('wind') }}:<span
-        >{{ currentFavorites ? currentFavoritesWeather?.wind : currentWeather?.wind }} м/с</span
+        >{{ currentFavorites ? currentFavoritesWeather?.wind : currentWeather?.wind }}
+        {{ $t('metric') }}</span
       >
     </p>
     <p class="weather-small">

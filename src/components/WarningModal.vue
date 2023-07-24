@@ -42,7 +42,7 @@ onUnmounted(() => {
   position: absolute;
   right: 20px;
   top: 20px;
-  font-size: 18px;
+  font-size: $fs-18;
   background: none;
   border: none;
   cursor: pointer;

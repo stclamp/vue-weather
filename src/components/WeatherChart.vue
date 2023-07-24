@@ -1,7 +1,7 @@
 <template>
   <div class="weather-chart" v-if="localCity">
     <canvas
-      :id="`weatherChart-${props.cardIndex}-${city}`"
+      :id="`weatherChart-${props.cardIndex.id}-${city}${favorites ? '-favorite' : ''}`"
       style="width: 100%; height: 400px"
     ></canvas>
   </div>
@@ -21,7 +21,7 @@ import i18n from '@/i18n'
 
 interface WeatherChartProps {
   city: string | undefined
-  cardIndex: number
+  cardIndex: { id: number }
   day: boolean
   favorites?: boolean
   favoritesWeather?: CurrentWeather
@@ -32,6 +32,7 @@ const apiKey = import.meta.env.VITE_OPEN_WEATHER_API
 
 const localCity = ref<string | null | undefined>(props.city || null)
 const weatherData = ref()
+let isValidDateDDMM = ref<boolean>(false)
 
 const locale = computed(() => i18n.global.locale.value)
 
@@ -54,7 +55,7 @@ watch(
 
     if (weatherData.value) {
       const weatherChart = document.getElementById(
-        `weatherChart-${props.cardIndex}-${props.city}`
+        `weatherChart-${props.cardIndex.id}-${props.city}${props.favorites ? '-favorite' : ''}`
       ) as HTMLCanvasElement
 
       if (weatherChart) {
@@ -68,8 +69,9 @@ async function getData(city: string | undefined) {
   try {
     if (city) {
       const { data } = await axios.get(
-        `https://api.openweathermap.org/data/2.5/forecast?q=${city}&lang=${locale.value}&appid=${apiKey}&units=metric`
+        `https://api.openweathermap.org/data/2.5/forecast?q=${city}&lang=${locale.value}appid=${apiKey}&units=metric`
       )
+
       const listOfDates = data.list
         .map((item: ForecastData, i: number) => {
           if (i > 14) return
@@ -130,16 +132,31 @@ function createChart(weatherData: WeekWeather[], weatherChart: HTMLCanvasElement
           x: {
             type: 'time',
             time: {
-              parser: (value: unknown) =>
-                moment(
+              parser: (value: unknown) => {
+                isValidDateDDMM.value = /^\d{2}\.\d{2}/.test(value as string)
+                const format = isValidDateDDMM.value ? 'DD.MM' : 'MM/DD'
+                return moment(
                   value as Date,
-                  props.day ? 'DD.MM.YYYY HH:mm' : 'DD.MM.YYYY'
-                ).toDate() as any,
+                  format + (props.day ? 'YYYY HH:mm' : 'YYYY')
+                ).toDate() as any
+              },
               unit: 'hour',
               displayFormats: {
-                hour: props.day ? 'DD.MM HH:mm' : 'DD.MM'
+                hour: props.day
+                  ? isValidDateDDMM.value
+                    ? 'DD.MM HH:mm'
+                    : 'MM/DD HH:mm'
+                  : isValidDateDDMM.value
+                  ? 'DD.MM'
+                  : 'MM/DD'
               },
-              tooltipFormat: props.day ? 'll HH:mm' : 'll'
+              tooltipFormat: props.day
+                ? isValidDateDDMM.value
+                  ? 'll HH:mm'
+                  : 'MM/DD ll HH:mm'
+                : isValidDateDDMM.value
+                ? 'll'
+                : 'MM/DD ll'
             },
             ticks: {
               source: 'labels',

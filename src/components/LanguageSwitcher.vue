@@ -1,9 +1,9 @@
 <template>
   <button
     v-for="sLocale in supportedLocales"
+    @click="switchLanguage"
     :key="`locale-${sLocale}`"
     :value="sLocale"
-    @click="switchLanguage"
     :class="`language-button ${sLocale === locale ? 'active' : ''}`"
   >
     {{ sLocale }}
@@ -22,7 +22,7 @@ const router = useRouter()
 const supportedLocales = Translation.supportedLocales
 
 async function switchLanguage(event: Event) {
-  const newLocale = (event.target as HTMLSelectElement).value
+  const newLocale = (event.target as HTMLButtonElement).value
   await Translation.switchLanguage(newLocale)
 
   try {
@@ -38,15 +38,15 @@ async function switchLanguage(event: Event) {
 @import '@/assets/styles/_variables.scss';
 .language-button {
   border: none;
-  color: #fff;
+  color: $color-text;
   background: none;
   cursor: pointer;
-  font-size: 16px;
+  font-size: $fs-16;
   margin-right: 5px;
-  transition: 0.3s ease-in-out;
+  transition: $transition;
 
   &.active {
-    border-bottom: 1px solid #fff;
+    border-bottom: 1px solid $color-text;
   }
 
   &:hover {
@@ -55,6 +55,14 @@ async function switchLanguage(event: Event) {
 
   &:last-child {
     margin-right: 0;
+  }
+}
+
+@media (min-width: 360px) and (max-width: 768px) {
+  .language-button {
+    &:hover {
+      color: $color-text;
+    }
   }
 }
 </style>

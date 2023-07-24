@@ -7,16 +7,18 @@
         @startLoading="startLoading"
         @endLoading="endLoading"
         :favorites="favorites"
-        :cardIndex="props.cardIndex"
+        :cardIndex="cardIndex"
         :currentUserCity="currentUserCity"
         :localCityName="localCityName"
       />
-      <div v-if="favorites" class="favorites-count">{{ $t('favorites') }} #{{ cardIndex + 1 }}</div>
+      <div v-if="favorites" class="favorites-count">
+        {{ $t('favorites') }} #{{ cardIndex.id + 1 }}
+      </div>
       <ButtonPrimary
         class="add-to-favorite"
-        :text="buttonText.text"
-        :starColor="(starColor as string)"
         @click="addToFavorite"
+        :text="buttonText.text"
+        :starColor="starColor"
         :hasIcon="true"
       />
     </div>
@@ -33,8 +35,13 @@
   </div>
   <WarningModal
     v-if="isWarning"
-    :text="$t('warningModalTextFavorites')"
     @closeWarningModal="closeWarningModal"
+    :text="$t('warningModalTextFavorites')"
+  />
+  <WarningModal
+    v-if="isEmpty"
+    @closeWarningModal="closeWarningModal"
+    :text="$t('waringModalTextEmpty')"
   />
 </template>
 
@@ -58,7 +65,7 @@ const EButton = computed(() => {
 })
 
 interface WeatherCardProps {
-  cardIndex: number
+  cardIndex: { id: number }
   deleteWeatherCard?: (index: number) => void
   favorites?: boolean
   localCityName?: string
@@ -73,11 +80,15 @@ let starColor = EButton.value.TRANSPARENT
 const buttonText = reactive({
   text: EButton.value.ADD
 })
+
+const getIpToken = import.meta.env.VITE_GET_IP_TOKEN
+
 const currentWeather = ref<CurrentWeather | null>(null)
 const currentUserCity = ref<string>('')
 const favoritesWeather = ref<CurrentWeather>()
 const loading = ref<boolean>(false)
 const isWarning = ref<boolean>(false)
+const isEmpty = ref<boolean>(false)
 
 onMounted(() => {
   watch(
@@ -89,6 +100,7 @@ onMounted(() => {
     ],
     () => {
       const localCityExist = localStorage.getItem(`weather_block_${currentWeather.value?.name}`)
+
       if (localCityExist === currentWeather.value?.name || props.favorites) {
         buttonText.text = EButton.value.REMOVE
         starColor = EButton.value.ORANGE
@@ -96,10 +108,17 @@ onMounted(() => {
         buttonText.text = EButton.value.ADD
         starColor = EButton.value.TRANSPARENT
       }
+
       emit('favoritesWeather', favoritesWeather.value)
     }
   )
-  getUserLocation()
+  if (props.cardIndex.id === 0) {
+    getUserLocation()
+  }
+
+  if (props.favorites) {
+    getUserLocation()
+  }
 })
 
 function handleValueChange(value: CurrentWeather) {
@@ -120,26 +139,40 @@ function endLoading() {
 
 function closeWarningModal() {
   isWarning.value = false
+  isEmpty.value = false
 }
 
 function addToFavorite() {
+  if (!currentWeather.value) {
+    isEmpty.value = true
+
+    return
+  }
+
   if (buttonText.text === EButton.value.ADD) {
     if (localStorage.length >= 6) {
       isWarning.value = true
+
       return
     }
+
     currentWeather.value &&
       localStorage.setItem(
         `weather_block_${currentWeather.value?.name}`,
         currentWeather.value?.name
       )
+
     buttonText.text = EButton.value.REMOVE
     starColor = EButton.value.ORANGE
   } else {
     localStorage.removeItem(`weather_block_${currentWeather.value?.name}`)
+
+    buttonText.text = EButton.value.ADD
     buttonText.text = EButton.value.ADD
     starColor = EButton.value.TRANSPARENT
+
     if (props.favorites) {
+      localStorage.removeItem(`weather_block_${favoritesWeather.value?.name}`)
       emit('removeFromFavorites', props.localCityName)
     }
   }
@@ -147,7 +180,7 @@ function addToFavorite() {
 
 async function getUserLocation() {
   try {
-    const { data } = await axios.get('https://ipinfo.io/json?token=530a90b96baf45')
+    const { data } = await axios.get(`https://ipinfo.io/json?token=${getIpToken}`)
 
     currentUserCity.value = data.city
   } catch (error) {
@@ -158,6 +191,7 @@ async function getUserLocation() {
 
 <style lang="scss">
 @import '@/assets/styles/_mixins.scss';
+@import '@/assets/styles/_variables.scss';
 .weather-card {
   @include box-shadow;
   padding: 25px;
@@ -165,16 +199,12 @@ async function getUserLocation() {
 }
 
 .weather-search-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  @include between-block;
 }
 
 .add-to-favorite {
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  @include between-block;
+  font-size: $fs-16;
   min-width: 240px;
   span {
     margin-left: 10px;
@@ -182,7 +212,7 @@ async function getUserLocation() {
 }
 
 .favorites-count {
-  font-size: 20px;
+  font-size: $fs-20;
 }
 
 .button-text {
@@ -195,6 +225,9 @@ async function getUserLocation() {
 }
 
 @media (min-width: 360px) and (max-width: 768px) {
+  .weather-card {
+    border-radius: 15px;
+  }
   .weather-search-wrapper {
     flex-direction: column;
   }

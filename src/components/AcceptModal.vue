@@ -40,22 +40,21 @@ function closeModal() {
 </script>
 
 <style scoped lang="scss">
+@import '@/assets/styles/_mixins.scss';
+@import '@/assets/styles/_variables.scss';
 .modal-buttons {
-  display: flex;
-  justify-content: center;
+  @include center-block;
   margin-top: 35px;
 }
 
 .modal-button {
+  @include center-block;
   padding: 10px;
-  font-size: 16px;
+  font-size: $fs-16;
   border-radius: 5px;
-  border: 1px solid #ccc;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border: 1px solid $color-light-gray;
   cursor: pointer;
-  transition: 0.3s ease-in-out;
+  transition: $transition;
   margin-right: 20px;
   min-width: 100px;
   text-align: center;
@@ -66,18 +65,18 @@ function closeModal() {
 }
 
 .modal-yes {
-  background-color: #b4f39b;
+  background-color: $color-green;
 
   &:hover {
-    background-color: #76b65d;
+    background-color: $color-green-hover;
   }
 }
 
 .modal-no {
-  background-color: #f8a693;
+  background-color: $color-red;
 
   &:hover {
-    background-color: #d46b53;
+    background-color: $color-red-hover;
   }
 }
 </style>

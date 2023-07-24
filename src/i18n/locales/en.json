@@ -10,11 +10,12 @@
   "removeButton": "Delete",
   "feelsLike": "Feels like",
   "wind": "Wind",
+  "metric": "m/s",
   "humidity": "Humidity",
   "acceptModalText": "Are you sure you want to delete?",
   "acceptModalYes": "Yes",
   "acceptModalNo": "No",
-  "warningModalTextBlock": "Maximum 5 blocks. Delete the previous one to add a new one!",
   "warningModalTextFavorites": "Maximum 5 blocks in favorites!",
+  "waringModalTextEmpty": "Please select a city first!",
   "nothingInFavorites": "Nothing in favorites yet..."
 }

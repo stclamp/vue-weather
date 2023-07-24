@@ -4,5 +4,28 @@ $main-bg: radial-gradient(
   rgba(69, 39, 139, 0.9) 0%,
   rgba(46, 51, 90, 0.9) 100%
 );
+$button-bg: rgba(72, 49, 157, 0.2);
+$button-bg-active: rgba(42, 23, 110, 0.768);
 $color-secondary: rgba(235, 235, 245, 0.6);
+$color-dark-gray: rgba(255, 255, 255, 0.2);
+$color-light-gray: #ccc;
+$color-green: #b4f39b;
+$color-green-hover: #76b65d;
+$color-red: #f8a693;
+$color-red-hover: #d46b53;
 $secondary-bg: linear-gradient(136deg, rgba(46, 51, 90, 0.26) 0%, rgba(28, 27, 51, 0.26) 100%);
+$overlay-color: rgba(0, 0, 0, 0.7);
+$scrollbar-bg: #f1f1f1;
+$scrollbar-thumb: rgba(42, 23, 110, 0.9);
+$scrollbar-thumb-hover: rgba(42, 23, 110, 0.7);
+
+$ff: 'Roboto', sans-serif;
+
+$fs-32: 2rem;
+$fs-26: 1.625rem;
+$fs-20: 1.25rem;
+$fs-18: 1.12rem;
+$fs-16: 1rem;
+$fs-14: 0.88rem;
+
+$transition: 0.3s ease-in-out;

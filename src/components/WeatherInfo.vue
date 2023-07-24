@@ -4,19 +4,19 @@
       <div class="buttons-info">
         <ButtonPrimary
           v-for="button in buttons"
-          :key="button.type"
-          :text="(button.label as string)"
           class="weather-button"
-          :class="{ active: activeButton === button.type }"
           @click="toggleActiveButton(button.type)"
+          :key="button.type"
+          :text="button.label"
+          :class="{ active: activeButton === button.type }"
         />
       </div>
       <div class="buttons-delete">
         <ButtonPrimary
-          :text="$t('removeButton')"
+          v-if="!props.favorites"
           class="weather-button button-delete"
           @click="handleOpenModal"
-          v-if="!props.favorites"
+          :text="$t('removeButton')"
         />
       </div>
     </div>
@@ -37,7 +37,6 @@
       :favorites="favorites"
       :weekWeather="weekWeather"
       :favoritesWeather="favoritesWeather"
-      :cardIndex="cardIndex"
       :loading="weekLoading"
     />
     <WeatherChart
@@ -52,9 +51,14 @@
   </div>
   <AcceptModal
     v-if="showModal"
-    :isShowModal="showModal"
-    @deleteConfirmed="deleteWeatherCard && deleteWeatherCard(cardIndex)"
+    @deleteConfirmed="handleDeleteWeather"
     @closeModal="handleCloseModal"
+    :isShowModal="showModal"
+  />
+  <WarningModal
+    v-if="isEmpty"
+    @closeWarningModal="handleCloseModal"
+    :text="$t('waringModalTextEmpty')"
   />
 </template>
 
@@ -68,13 +72,14 @@ import WeatherInfoWeek from '@/components/WeatherInfoWeek.vue'
 import AcceptModal from '@/components/AcceptModal.vue'
 import SpinnerIcon from '@/components/SpinnerIcon.vue'
 import ButtonPrimary from '@/components/ButtonPrimary.vue'
+import WarningModal from '@/components/WarningModal.vue'
 import { groupForecastsByDate } from '@/helpers/groupForecasts'
 import { getDailyFortecasts } from '@/helpers/getDailyForecasts'
 import { EDayWeekButton, type CurrentWeather, type WeekWeather } from '@/types/index.ts'
 
 interface InfoProps {
   currentWeather: CurrentWeather | null
-  cardIndex: number
+  cardIndex: { id: number }
   deleteWeatherCard?: (index: number) => void
   favorites?: boolean
   favoritesWeather?: CurrentWeather
@@ -87,6 +92,7 @@ const apiKey = import.meta.env.VITE_OPEN_WEATHER_API
 
 const activeButton = ref<EDayWeekButton>(EDayWeekButton.DAY_BUTTON_TYPE)
 const showModal = ref<boolean>(false)
+const isEmpty = ref<boolean>(false)
 const day = ref<boolean>(true)
 const week = ref<boolean>(false)
 const weekWeather = ref<WeekWeather[] | null | undefined>(null)
@@ -121,6 +127,11 @@ watch(
 )
 
 function toggleActiveButton(buttonType: EDayWeekButton) {
+  if (!props.currentWeather) {
+    isEmpty.value = true
+
+    return
+  }
   activeButton.value = buttonType
   if (buttonType === EDayWeekButton.DAY_BUTTON_TYPE) {
     showDayWeather()
@@ -139,6 +150,14 @@ function handleOpenModal() {
 
 function handleCloseModal() {
   showModal.value = false
+  isEmpty.value = false
+}
+
+function handleDeleteWeather() {
+  if (props.deleteWeatherCard) {
+    props.deleteWeatherCard(props.cardIndex.id)
+    showModal.value = false
+  }
 }
 
 function showDayWeather() {
@@ -150,6 +169,7 @@ async function showWeekWeather(city: string | undefined) {
   if (city) {
     week.value = true
     day.value = false
+
     weekWeather.value = await getWeatherData(city)
   }
 }
@@ -157,6 +177,7 @@ async function showWeekWeather(city: string | undefined) {
 async function getWeatherData(city: string) {
   try {
     weekLoading.value = true
+
     const { data } = await axios.get(
       `https://api.openweathermap.org/data/2.5/forecast?q=${city}&lang=${locale.value}&appid=${apiKey}&units=metric`
     )
@@ -166,6 +187,7 @@ async function getWeatherData(city: string) {
     const dailyForecasts = getDailyFortecasts(groupedForecasts, locale.value)
 
     weekLoading.value = false
+
     return dailyForecasts
   } catch (error) {
     console.error(error)
@@ -174,10 +196,10 @@ async function getWeatherData(city: string) {
 </script>
 
 <style lang="scss">
+@import '@/assets/styles/_mixins.scss';
 @import '@/assets/styles/_variables.scss';
 .buttons-wrapper {
-  display: flex;
-  justify-content: space-between;
+  @include between-block;
   margin-top: 15px;
 }
 .weather-button {
@@ -203,11 +225,9 @@ async function getWeatherData(city: string) {
 }
 
 .weather-info {
-  margin-top: 20px;
-  display: flex;
+  @include center-block;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  margin-top: 20px;
   min-height: 232px;
 }
 
@@ -215,10 +235,13 @@ async function getWeatherData(city: string) {
   min-height: 232px;
 }
 
+.weather-week-wrapper {
+  @include center-block;
+  flex-direction: column;
+}
+
 .weather-week {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  @include between-block;
   flex-direction: row;
   min-height: 232px;
 }
@@ -229,14 +252,14 @@ async function getWeatherData(city: string) {
 }
 
 .weather-temp {
-  font-size: 32px;
+  font-size: $fs-32;
   font-weight: 700;
   margin-left: 10px;
 }
 
 .weather-small {
   margin-top: 20px;
-  font-size: 14px;
+  font-size: $fs-14;
   color: $color-secondary;
 
   span {
@@ -286,13 +309,10 @@ async function getWeatherData(city: string) {
   }
 
   .weather-week-wrapper {
-    justify-content: center;
-    align-items: center;
     width: 170px;
     display: inline-flex;
     border-radius: 5px;
     margin-right: 15px;
-    flex-direction: column;
     height: auto;
     &:last-child {
       margin-right: 15px;

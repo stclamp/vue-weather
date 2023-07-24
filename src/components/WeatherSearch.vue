@@ -11,9 +11,9 @@
       <div
         v-else
         v-for="(city, index) in autoCompleteCities"
-        :key="index"
-        @click="selectCity(city)"
         class="autocomplete_wrapper"
+        @click="selectCity(city)"
+        :key="index"
       >
         <p class="city">{{ city.name }}</p>
         <p class="county">{{ city.country }}</p>
@@ -73,7 +73,9 @@ async function onCityInputChange() {
 async function selectCity(city: CityInfo) {
   cityInput.value = city.name
   showAutoComplete.value = false
+
   const weatherInfo = await getWeatherData(city.name)
+
   emit('currentWeather', weatherInfo)
 }
 
@@ -129,6 +131,7 @@ async function getWeatherData(city: string | undefined) {
 </script>
 
 <style scoped lang="scss">
+@import '@/assets/styles/_mixins.scss';
 @import '@/assets/styles/_variables.scss';
 
 .autocomplete-container {
@@ -143,7 +146,7 @@ input {
   width: 100%;
   border: none;
   color: $color-secondary;
-  font-size: 17px;
+  font-size: $fs-18;
   font-style: normal;
   font-weight: 400;
 
@@ -155,7 +158,7 @@ input {
 .autocomplete {
   position: absolute;
   top: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid $color-dark-gray;
   background: $main-bg;
   z-index: 999;
   max-height: 400px;
@@ -165,11 +168,10 @@ input {
 }
 
 .autocomplete_wrapper {
+  @include between-block;
   padding: 10px 25px;
-  font-size: 18px;
+  font-size: $fs-18;
   cursor: pointer;
-  display: flex;
-  justify-content: space-between;
   transition: 0.3s ease-in-out;
 
   &:hover {
@@ -178,6 +180,9 @@ input {
 }
 
 @media (min-width: 360px) and (max-width: 768px) {
+  input {
+    border-radius: 7px;
+  }
   .autocomplete-container {
     width: 100%;
   }

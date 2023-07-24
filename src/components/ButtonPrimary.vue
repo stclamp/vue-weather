@@ -18,36 +18,37 @@ defineProps<ButtonProps>()
 </script>
 
 <style scoped lang="scss">
+@import '@/assets/styles/_mixins.scss';
 @import '@/assets/styles/_variables.scss';
 .button-primary {
+  @include box-shadow;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(72, 49, 157, 0.2);
-  box-shadow: 5px 4px 10px 0px rgba(0, 0, 0, 0.25), 1px 1px 0px 0px rgba(255, 255, 255, 0.25) inset;
+  background: $button-bg;
   padding: 10px 20px;
   color: $color-text;
   cursor: pointer;
-  transition: 0.3s ease-in-out;
+  transition: $transition;
 
   &:hover {
-    background: rgba(42, 23, 110, 0.768);
+    background: $button-bg-active;
   }
 
   &.active {
-    background: rgba(42, 23, 110, 0.768);
+    background: $button-bg-active;
   }
 }
 
 @media (min-width: 360px) and (max-width: 768px) {
   .button-primary {
     width: 100%;
+    border-radius: 7px;
 
     &:hover {
-      background: rgba(72, 49, 157, 0.2);
+      background: $button-bg;
     }
 
     &.active {
-      background: rgba(42, 23, 110, 0.768);
+      background: $button-bg-active;
     }
   }
 }

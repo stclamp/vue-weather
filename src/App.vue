@@ -41,10 +41,6 @@ a {
 .router-link-exact-active {
   color: $color-text;
   border-bottom: 1px solid $color-text;
-
-  &:hover {
-    border-bottom: 1px solid $color-secondary;
-  }
 }
 
 .home-wrapper {
@@ -59,16 +55,14 @@ a {
   justify-content: space-between;
 }
 
-@media (max-width: 1200px) {
-  .container {
-    max-width: 100%;
-    padding: 10px;
-  }
-}
-
 @media (min-width: 360px) and (max-width: 768px) {
   .home-wrapper {
     margin-top: 15px;
+  }
+  a {
+    &:hover {
+      color: $color-text;
+    }
   }
   input {
     font-size: 14px;

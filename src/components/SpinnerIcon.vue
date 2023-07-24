@@ -10,50 +10,14 @@
 </template>
 
 <style scoped lang="scss">
+@import '@/assets/styles/_mixins.scss';
+@import '@/assets/styles/_variables.scss';
 .spinner-wrapper {
+  @include center-block;
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
-// .lds-ring {
-//   display: inline-block;
-//   position: relative;
-//   width: 80px;
-//   height: 80px;
-// }
-// .lds-ring div {
-//   box-sizing: border-box;
-//   display: block;
-//   position: absolute;
-//   width: 64px;
-//   height: 64px;
-//   margin: 8px;
-//   // border: 8px solid #7bd2bb;
-//   border: 8px solid rgba(42, 23, 110, 0.768);
-//   border-radius: 50%;
-//   animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-//   // border-color: #7bd2bb transparent transparent transparent;
-//   border-color: rgba(42, 23, 110, 0.768) transparent transparent transparent;
-// }
-// .lds-ring div:nth-child(1) {
-//   animation-delay: -0.45s;
-// }
-// .lds-ring div:nth-child(2) {
-//   animation-delay: -0.3s;
-// }
-// .lds-ring div:nth-child(3) {
-//   animation-delay: -0.15s;
-// }
-// @keyframes lds-ring {
-//   0% {
-//     transform: rotate(0deg);
-//   }
-//   100% {
-//     transform: rotate(360deg);
-//   }
-// }
+
 .lds-ellipsis {
   display: inline-block;
   position: relative;
@@ -66,7 +30,7 @@
   width: 13px;
   height: 13px;
   border-radius: 50%;
-  background: #fff;
+  background: $color-text;
   animation-timing-function: cubic-bezier(0, 1, 1, 0);
 }
 .lds-ellipsis div:nth-child(1) {

@@ -10,11 +10,12 @@
   "removeButton": "Видалити",
   "feelsLike": "Відчувається як",
   "wind": "Вітер",
+  "metric": "м/с",
   "humidity": "Вологість",
   "acceptModalText": "Ви впевнені, що бажаєте видалити?",
   "acceptModalYes": "Так",
   "acceptModalNo": "Ні",
-  "warningModalTextBlock": "Максимум 5 блоків. Видаліть попередній, щоб додати новий!",
   "warningModalTextFavorites": "Максимум 5 блоків в обраному!",
+  "waringModalTextEmpty": "Спочатку оберіть місто!",
   "nothingInFavorites": "Поки що нічого немає в обраному..."
 }

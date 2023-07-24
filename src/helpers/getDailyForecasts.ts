@@ -7,9 +7,11 @@ export function getDailyFortecasts(groupedForecasts: GroupedForecast, locale: st
     const averageTemperature =
       forecastsForDate.reduce((sum, forecast) => sum + forecast.main.temp, 0) /
       forecastsForDate.length
+
     const averageWind =
       forecastsForDate.reduce((sum, forecast) => sum + forecast.wind.speed, 0) /
       forecastsForDate.length
+
     const averageHumidity =
       forecastsForDate.reduce((sum, forecast) => sum + forecast.main.humidity, 0) /
       forecastsForDate.length

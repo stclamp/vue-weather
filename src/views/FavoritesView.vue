@@ -2,10 +2,10 @@
   <div v-if="cards.length > 0">
     <template v-for="(card, index) in cards" :key="index">
       <WeatherCard
-        :cardIndex="index"
+        @removeFromFavorites="handleDelete"
+        :cardIndex="{ id: index }"
         :localCityName="card"
         :favorites="favorites"
-        @removeFromFavorites="handleDelete"
       />
     </template>
   </div>
@@ -23,10 +23,13 @@ const languageExist = localStorage.getItem('language')
 onMounted(() => {
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i) as string
+
     if (localStorage.getItem(key) === languageExist) {
       continue
     }
+
     const card = localStorage.getItem(key)
+
     cards.value.push(card as string)
   }
 })
