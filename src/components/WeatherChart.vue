@@ -69,7 +69,7 @@ async function getData(city: string | undefined) {
   try {
     if (city) {
       const { data } = await axios.get(
-        `https://api.openweathermap.org/data/2.5/forecast?q=${city}&lang=${locale.value}appid=${apiKey}&units=metric`
+        `https://api.openweathermap.org/data/2.5/forecast?q=${city}&lang=${locale.value}&appid=${apiKey}&units=metric`
       )
 
       const listOfDates = data.list
