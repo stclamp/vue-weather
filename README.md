@@ -2,6 +2,8 @@
 
 A simple Weather App built on **Vue.js**, **TypeScript**, **Axios**, **Chart.js**, **i18n** and **Scss**.
 
+DEMO: https://vue-weather-teal.vercel.app
+
 ## Node.js
 
 Using Node.js ver. **18.16.0**
